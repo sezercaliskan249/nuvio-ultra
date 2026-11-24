@@ -1,12 +1,12 @@
 {
   "name": "Ultra Stream Repo",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "scrapers": [
     {
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). En kaliteli kısım, birkaç saniye daha geç gelir.",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -32,7 +32,7 @@
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "Vidlink + VidRock: 1080p / 720p MP4 ve HLS. Hızlı açılan yedek linkler.",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -58,7 +58,7 @@
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
       "description": "Torrentio: 25+ siteden 4K / 1080p / 720p torrentler, seed sayısıyla. Anında gelir.",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -75,6 +75,75 @@
         "mkv",
         "mp4",
         "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-filmmodu",
+      "name": "Ultra FilmModu",
+      "description": "🇹🇷 FilmModu: Türkçe dublaj + Türkçe altyazılı filmler, 1080p / 720p HLS (bazı filmlerde 4K). Altyazı otomatik eklenir.",
+      "version": "2.3.0",
+      "author": "Ultra",
+      "supportedTypes": [
+        "movie"
+      ],
+      "filename": "trfilmmodu.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-webteizle",
+      "name": "Ultra Webteizle",
+      "description": "🇹🇷 Webteizle: Türkçe dublaj + altyazılı filmler (VidMoly, Ok.ru, FileMoon sunucuları).",
+      "version": "2.3.0",
+      "author": "Ultra",
+      "supportedTypes": [
+        "movie"
+      ],
+      "filename": "trwebteizle.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-sezonlukdizi",
+      "name": "Ultra SezonlukDizi",
+      "description": "🇹🇷 SezonlukDizi: Türkçe altyazılı + dublaj diziler (VidMoly, Ok.ru, Sibnet sunucuları).",
+      "version": "2.3.0",
+      "author": "Ultra",
+      "supportedTypes": [
+        "tv"
+      ],
+      "filename": "trsezonluk.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
       ],
       "limited": false,
       "disabledPlatforms": [],
