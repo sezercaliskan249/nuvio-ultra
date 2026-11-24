@@ -1,6 +1,6 @@
 /**
  * ultra - src/ultra/ altından üretildi
- * Tarih: 2026-11-24T00:11:01.431Z
+ * Tarih: 2026-11-24T00:36:09.652Z
  */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -587,7 +587,8 @@ function processItem($, el, pageUrl) {
         type: "direct",
         source: "4khdhub",
         prio: k.prio,
-        kind: l.kind
+        kind: l.kind,
+        fileName: name
       };
     });
   });
@@ -780,7 +781,8 @@ function getMoviesDriveStreams(tmdbId, mediaType, season, episode) {
         type: "direct",
         source: "moviesdrive",
         prio: k.prio,
-        kind: l.kind
+        kind: l.kind,
+        fileName: l.fileTitle
       };
     });
     console.log(`[Ultra/MoviesDrive] ${out.length} \xE7al\u0131\u015Fan direkt link`);
@@ -1049,6 +1051,8 @@ function expandServer(serverName, url) {
           headers: VIDROCK_HEADERS,
           type: "direct",
           source: "vidrock",
+          server: serverName,
+          lang: "\u0130ngilizce",
           prio: SERVER_PRIORITY[serverName] || 0
         }
       ];
@@ -1072,6 +1076,8 @@ function expandServer(serverName, url) {
       headers: VIDROCK_HEADERS,
       type: "direct",
       source: "vidrock",
+      server: serverName,
+      lang: "\u0130ngilizce",
       prio: SERVER_PRIORITY[serverName] || 0
     }));
   });
@@ -1324,16 +1330,17 @@ function getTorrentStreams(tmdbId, mediaType, season, episode) {
       const size = parseSize(s.title);
       const tracker = parseTracker(s.title);
       const magnet = buildMagnet(s.infoHash, filename, s.sources);
-      const titleParts = [quality];
-      if (size)
-        titleParts.push(size);
-      if (seeds)
-        titleParts.push(`\u{1F465} ${seeds} seed`);
-      if (tracker)
-        titleParts.push(tracker);
+      const lines = String(s.title || "").split("\n");
+      const releaseName = lines[0] || filename;
+      const flagLine = lines.filter((l) => /\uD83C[\uDDE6-\uDDFF]/.test(l)).pop() || "";
+      const nameTags = String(s.name || "").split("\n").slice(1).join(" ");
       streams.push({
         name: `Ultra \u2022 Torrent ${quality}`,
-        title: titleParts.join(" \u2022 "),
+        title: releaseName,
+        tracker,
+        fileName: releaseName,
+        extraTags: nameTags,
+        flags: flagLine.trim(),
         url: magnet,
         quality,
         size,
@@ -1346,6 +1353,208 @@ function getTorrentStreams(tmdbId, mediaType, season, episode) {
     streams.sort((a, b) => (b.seeds || 0) - (a.seeds || 0));
     return streams;
   });
+}
+
+// src/ultra/format.js
+var SEP = "  \xB7  ";
+var PROVIDER_NAMES = {
+  "4khdhub": "4KHDHub",
+  moviesdrive: "MoviesDrive",
+  vidlink: "Vidlink",
+  vidrock: "VidRock",
+  vixsrc: "Vixsrc",
+  torrentio: "Torrentio"
+};
+var TRACKER_NAMES = {
+  thepiratebay: "The Pirate Bay",
+  "1337x": "1337x",
+  yts: "YTS",
+  eztv: "EZTV",
+  rarbg: "RARBG",
+  torrentgalaxy: "TorrentGalaxy",
+  rutracker: "RuTracker",
+  rutor: "Rutor",
+  kickasstorrents: "KickassTorrents",
+  magnetdl: "MagnetDL",
+  horriblesubs: "HorribleSubs",
+  nyaasi: "Nyaa",
+  tokyotosho: "TokyoTosho",
+  anidex: "AniDex",
+  ext: "EXT.to",
+  torrent9: "Torrent9",
+  ilcorsaronero: "ilCorSaRoNeRo",
+  mejortorrent: "MejorTorrent",
+  wolfmax4k: "Wolfmax4K",
+  cinecalidad: "Cinecalidad",
+  besttorrents: "BestTorrents",
+  bitsearch: "BitSearch"
+};
+function linkTypeLabel(s) {
+  switch (s.kind) {
+    case "R2":
+      return "\u26A1 Direkt  \xB7  Sar\u0131labilir";
+    case "FSL":
+      return "\u26A1 FSL  \xB7  Sar\u0131labilir";
+    case "S3":
+      return "\u26A1 S3  \xB7  Sar\u0131labilir";
+    case "PIXEL":
+      return "\u{1F680} Google CDN  \xB7  Sarma s\u0131n\u0131rl\u0131";
+    case "ZIPDISK":
+      return "\u2601\uFE0F ZipDisk";
+  }
+  if (s.source === "vidlink")
+    return "\u{1F3AF} MP4  \xB7  Sar\u0131labilir";
+  if (s.source === "vidrock")
+    return `\u{1F4FA} HLS  \xB7  Sunucu ${s.server || "?"}`;
+  if (s.source === "vixsrc")
+    return "\u{1F4FA} HLS";
+  return "\u{1F517} Direkt";
+}
+function parseRelease(text) {
+  const t = String(text || "");
+  const source = /remux/i.test(t) ? "REMUX" : /blu-?ray|bdrip|brrip/i.test(t) ? "BluRay" : /web-?dl/i.test(t) ? "WEB-DL" : /webrip/i.test(t) ? "WEBRip" : /hdtv/i.test(t) ? "HDTV" : /\b(cam|hdcam|ts|telesync)\b/i.test(t) ? "CAM" : "";
+  const video = [];
+  if (/\bDV\b|dolby.?vision|\bDoVi\b/i.test(t))
+    video.push("Dolby Vision");
+  if (/HDR10\+|HDR10plus/i.test(t))
+    video.push("HDR10+");
+  else if (/\bHDR(10)?\b/i.test(t))
+    video.push("HDR");
+  if (/x265|hevc|h\.?265/i.test(t))
+    video.push("HEVC");
+  else if (/x264|avc|h\.?264/i.test(t))
+    video.push("H.264");
+  else if (/\bav1\b/i.test(t))
+    video.push("AV1");
+  if (/10.?bit/i.test(t))
+    video.push("10bit");
+  if (/\bIMAX\b/i.test(t))
+    video.push("IMAX");
+  const audio = [];
+  if (/truehd/i.test(t))
+    audio.push("TrueHD");
+  else if (/DTS[-.\s]?HD|DTS[-.\s]?MA/i.test(t))
+    audio.push("DTS-HD MA");
+  else if (/DTS/i.test(t))
+    audio.push("DTS");
+  else if (/DDP|DD\+|E-?AC-?3/i.test(t))
+    audio.push("Dolby Digital+");
+  else if (/AC-?3|\bDD\b/i.test(t))
+    audio.push("Dolby Digital");
+  else if (/AAC/i.test(t))
+    audio.push("AAC");
+  if (/atmos/i.test(t))
+    audio.push("Atmos");
+  let best = null;
+  const chRe = /(?:^|[^0-9])([2578])[ .]([01])(?![0-9])/g;
+  let m;
+  while ((m = chRe.exec(t)) !== null) {
+    const v = parseFloat(m[1] + "." + m[2]);
+    if (best === null || v > best)
+      best = v;
+  }
+  if (best !== null)
+    audio.push(best.toFixed(1));
+  const langs = [];
+  if (/english|\beng\b/i.test(t))
+    langs.push("\u0130ngilizce");
+  if (/turkish|türkçe|\btur\b/i.test(t))
+    langs.push("T\xFCrk\xE7e");
+  if (/hindi/i.test(t))
+    langs.push("Hint\xE7e");
+  if (/tamil/i.test(t))
+    langs.push("Tamil");
+  if (/telugu/i.test(t))
+    langs.push("Telugu");
+  if (/multi/i.test(t) && langs.length === 0)
+    langs.push("\xC7oklu dil");
+  if (/dual.?audio/i.test(t) && langs.length === 0)
+    langs.push("\xC7ift ses");
+  return { source, video, audio, langs };
+}
+function badge(rel) {
+  const b = [];
+  if (rel.source === "REMUX")
+    b.push("REMUX");
+  if (rel.video.indexOf("Dolby Vision") !== -1)
+    b.push("DV");
+  if (rel.video.indexOf("HDR10+") !== -1)
+    b.push("HDR10+");
+  else if (rel.video.indexOf("HDR") !== -1)
+    b.push("HDR");
+  return b.join(" ");
+}
+function shortFile(name, max) {
+  const n = String(name || "").replace(/\[[^\]]*\.(com|net|org|in|xyz)[^\]]*\]/gi, "").replace(/^[-\s.]+/, "").replace(/\s+/g, " ").trim();
+  if (n.length <= max)
+    return n;
+  return n.slice(0, max - 1).trim() + "\u2026";
+}
+function seedHealth(seeds) {
+  if (seeds >= 100)
+    return `\u{1F7E2} ${seeds} seed  \xB7  \xC7ok h\u0131zl\u0131`;
+  if (seeds >= 30)
+    return `\u{1F7E2} ${seeds} seed  \xB7  H\u0131zl\u0131`;
+  if (seeds >= 10)
+    return `\u{1F7E1} ${seeds} seed  \xB7  Orta`;
+  if (seeds > 0)
+    return `\u{1F534} ${seeds} seed  \xB7  Yava\u015F`;
+  return "\u26AA Seed bilgisi yok";
+}
+function prettyTracker(raw) {
+  if (!raw)
+    return "";
+  const key = String(raw).toLowerCase().replace(/[^a-z0-9]/g, "");
+  return TRACKER_NAMES[key] || raw;
+}
+function formatStream(s) {
+  const isTorrent = s.type === "torrent";
+  const q = s.quality || "Auto";
+  const rel = parseRelease((s.fileName || "") + " " + (s.extraTags || ""));
+  const b = badge(rel);
+  const icon = isTorrent ? "\u{1F9F2}" : "\u26A1";
+  const name = `${icon} ${q}` + (b ? `${SEP}${b}` : "");
+  const lines = [];
+  const provider = PROVIDER_NAMES[s.source] || s.source || "";
+  if (isTorrent) {
+    const tr = prettyTracker(s.tracker);
+    lines.push(`\u{1F4E1} ${tr || "Torrent"}${SEP}\u{1F9F2} Torrent`);
+    const l2 = [seedHealth(s.seeds || 0)];
+    if (s.size)
+      l2.push(`\u{1F4BE} ${s.size}`);
+    lines.push(l2.join(SEP));
+  } else {
+    lines.push(`\u{1F4E1} ${provider}${SEP}${linkTypeLabel(s)}`);
+  }
+  const vid = [];
+  if (rel.source && rel.source !== "REMUX")
+    vid.push(rel.source);
+  if (rel.source === "REMUX")
+    vid.push("REMUX");
+  rel.video.forEach((v) => vid.push(v));
+  if (vid.length)
+    lines.push(`\u{1F39E} ${vid.join(" \xB7 ")}`);
+  const l3 = [];
+  const audio = [];
+  if (s.flags) {
+    audio.push(
+      s.flags.replace(/multi\s*audio/i, "\xC7oklu ses").replace(/dual\s*audio/i, "\xC7ift ses").replace(/\s*\/\s*/g, " ").trim()
+    );
+  } else if (rel.langs.length)
+    audio.push(rel.langs.join(" + "));
+  else if (s.lang)
+    audio.push(s.lang);
+  if (rel.audio.length)
+    audio.push(rel.audio.join(" \xB7 "));
+  if (audio.length)
+    l3.push(`\u{1F50A} ${audio.join(" \xB7 ")}`);
+  if (!isTorrent && s.size)
+    l3.push(`\u{1F4BE} ${s.size}`);
+  if (l3.length)
+    lines.push(l3.join(SEP));
+  if (s.fileName)
+    lines.push(`\u{1F4C4} ${shortFile(s.fileName, 70)}`);
+  return { name, title: lines.join("\n") };
 }
 
 // src/ultra/index.js
@@ -1450,7 +1659,8 @@ function getStreams(tmdbId, mediaType, season, episode) {
       `[Ultra] Toplam ${all.length} (direkt ${direct.length}, 4K direkt ${fourK}, torrent ${torrents.length}) \u2014 ${Date.now() - t0} ms`
     );
     return all.map((s) => {
-      const out = { name: s.name, title: s.title, url: s.url, quality: s.quality };
+      const f = formatStream(s);
+      const out = { name: f.name, title: f.title, url: s.url, quality: s.quality };
       if (s.size)
         out.size = s.size;
       if (s.headers)

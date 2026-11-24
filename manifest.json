@@ -1,12 +1,12 @@
 {
   "name": "Ultra Stream Repo",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "scrapers": [
     {
       "id": "ultra-stream",
       "name": "Ultra Stream (4K + Torrent)",
       "description": "5 direkt kaynak (4KHDHub, MoviesDrive, Vidlink, VidRock, Vixsrc) ile 4K/1080p/720p linkler + Torrentio torrentleri. Linkler otomatik doğrulanır.",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
