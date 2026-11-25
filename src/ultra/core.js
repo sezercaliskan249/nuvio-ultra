@@ -105,6 +105,8 @@ function limitDirect(list) {
   return list.filter((s) => {
     const key = s.source + "|" + s.quality + "|" + (s.tr || "");
     counts[key] = (counts[key] || 0) + 1;
+    // 111477: her dosya linki kullanıcının jetonundan düşüyor -> gelen her dosyayı göster, hiçbirini gizleme
+    if (s.source === "111477") return true;
     return counts[key] <= MAX_DIRECT_PER_SOURCE_QUALITY;
   });
 }

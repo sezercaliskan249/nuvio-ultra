@@ -1,6 +1,6 @@
 /**
  * trsezonluk - src/trsezonluk/ altından üretildi
- * Tarih: 2026-11-25T13:28:05.527Z
+ * Tarih: 2026-11-25T13:51:04.582Z
  */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -2964,6 +2964,8 @@ function limitDirect(list) {
   return list.filter((s) => {
     const key = s.source + "|" + s.quality + "|" + (s.tr || "");
     counts[key] = (counts[key] || 0) + 1;
+    if (s.source === "111477")
+      return true;
     return counts[key] <= MAX_DIRECT_PER_SOURCE_QUALITY;
   });
 }
