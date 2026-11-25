@@ -1,6 +1,6 @@
 /**
  * ultraarsiv - src/ultraarsiv/ altından üretildi
- * Tarih: 2026-11-25T13:14:23.490Z
+ * Tarih: 2026-11-25T13:28:05.543Z
  */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -844,7 +844,7 @@ function qualityFromResolution(resolution) {
   if (!resolution)
     return "Auto";
   const parts = resolution.split("x").map(Number);
-  const height = parts[1] || 0;
+  const height = Math.max(parts[1] || 0, Math.round((parts[0] || 0) * 9 / 16 / 10) * 10);
   if (height >= 2160)
     return "4K";
   if (height >= 1440)
@@ -1909,7 +1909,7 @@ function generic(url, referer, host) {
 }
 
 // src/ultra/sources/webteizle.js
-var CANDIDATES2 = ["https://webteizle.info", "https://webteizle2.com"];
+var CANDIDATES2 = ["https://webteizle.info"];
 var MARKER2 = /webteizle/i;
 var SKIP = /netu|uptobox|streamsb|fragman|youtube/i;
 var MAX_ALT = 6;
@@ -2078,7 +2078,7 @@ function getWebteizleStreams(tmdbId, mediaType, season, episode, diag) {
 }
 
 // src/ultra/sources/sezonlukdizi.js
-var CANDIDATES3 = ["https://sezonlukdizi.cc", "https://sezonlukdizi8.com"];
+var CANDIDATES3 = ["https://sezonlukdizi.cc"];
 var MARKER3 = /sezonlukdizi/i;
 var SKIP2 = /netu|pixel/i;
 var MAX_ALT2 = 6;
@@ -2393,8 +2393,7 @@ var SERVERS = [
   ["portland", "Portland"],
   ["austin", "Austin"]
 ];
-var WANT = 3;
-var BUDGET_MS = 3e4;
+var BUDGET_MS = 2e4;
 var MAX_RESULTS = 8;
 var M32 = 4294967295;
 var SLOTS = 61;
@@ -2472,7 +2471,51 @@ function quality(raw, url) {
       return q + "p";
   return "Auto";
 }
-var RANK = { "4K": 5, "1080p": 4, "720p": 3, "480p": 2, "360p": 1, Auto: 3.5 };
+var RANK = { "4K": 5, "1440p": 4.5, "1080p": 4, "720p": 3, "480p": 2, "360p": 1, Auto: 3.5 };
+function fmtOf(url) {
+  if (/\.mpd(\?|$)/.test(url))
+    return "DASH";
+  if (/\/mp4\/|\.mp4(\?|$)/.test(url) && !/\.m3u8/.test(url))
+    return "MP4";
+  return "HLS";
+}
+function buildCards(master, streams) {
+  return __async(this, null, function* () {
+    const probe = master || (fmtOf(streams[0].url) === "HLS" ? streams[0].url : null);
+    if (probe) {
+      const r = yield req(probe, { headers: PLAY_HEADERS, timeout: 6e3 });
+      if (r.ok && /#EXT-X-STREAM-INF/.test(r.text || "")) {
+        const best = {};
+        parseM3U8(r.text, r.url || probe).forEach((v) => {
+          if (!v.url || !v.resolution)
+            return;
+          const q = v.quality;
+          if (!(q in RANK))
+            return;
+          if (!best[q] || (v.bandwidth || 0) > (best[q].bandwidth || 0))
+            best[q] = v;
+        });
+        const qs = Object.keys(best);
+        if (qs.length) {
+          return qs.sort((a, b) => RANK[b] - RANK[a]).map((q) => {
+            const v = best[q];
+            const mb = v.bandwidth ? `  \xB7  ~${Math.max(1, Math.round(v.bandwidth / 1e6))} Mbps` : "";
+            return { url: v.url, q, format: "HLS", note: `\u2705 Do\u011Fruland\u0131: ${v.resolution.replace("x", "\xD7")}${mb}` };
+          });
+        }
+      }
+    }
+    const byQ = {};
+    streams.forEach((s) => {
+      if (!byQ[s.q])
+        byQ[s.q] = s;
+    });
+    const cards = Object.keys(byQ).sort((a, b) => RANK[b] - RANK[a]).map((q) => ({ url: byQ[q].url, q, format: fmtOf(byQ[q].url), note: "\u2139\uFE0F Kalite sunucunun etiketi (do\u011Frulanamad\u0131)" }));
+    if (master)
+      cards.unshift({ url: master, q: "Auto", format: "HLS", note: "\u{1F504} Otomatik kalite (ba\u011Flant\u0131na g\xF6re)" });
+    return cards;
+  });
+}
 function getSeed(tmdbId) {
   return __async(this, null, function* () {
     let r = null;
@@ -2527,8 +2570,9 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
     const note = (k) => why[k] = (why[k] || 0) + 1;
     const out = [];
     let tried = 0;
+    let foundAt = null;
     for (const [shard, name, alt] of SERVERS) {
-      if (out.length >= WANT || Date.now() - t0 > BUDGET_MS)
+      if (foundAt || Date.now() - t0 > BUDGET_MS)
         break;
       tried++;
       if (Date.now() - S.at > S.ttl - 8e3) {
@@ -2563,11 +2607,11 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
       const seen = {};
       const streams = [];
       (data.sources || []).forEach((s) => {
-        const url2 = s && (s.url || s.file);
-        if (typeof url2 !== "string" || !/^https?:/.test(url2) || seen[url2])
+        const url = s && (s.url || s.file);
+        if (typeof url !== "string" || !/^https?:/.test(url) || seen[url])
           return;
-        seen[url2] = 1;
-        streams.push({ url: url2, q: quality(s.quality || s.label, url2) });
+        seen[url] = 1;
+        streams.push({ url, q: quality(s.quality || s.label, url) });
       });
       if (!streams.length) {
         note("bu filmde link yok");
@@ -2575,29 +2619,31 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
       }
       streams.sort((a, b) => RANK[b.q] - RANK[a.q]);
       const master = typeof data.playlist === "string" && /^https?:/.test(data.playlist) ? data.playlist : null;
-      const url = master || streams[0].url;
-      const isMp4 = /\/mp4\/|\.mp4(\?|$)/.test(url) && !/\.m3u8/.test(url);
-      const isDash = /\.mpd(\?|$)/.test(url);
       const subs = (data.subtitles || data.tracks || []).filter((t) => t && (t.url || t.file)).slice(0, 8).map((t) => ({ url: t.url || t.file, language: t.lang || t.language || t.label || "en", name: t.label || t.lang || "Altyaz\u0131" }));
-      out.push({
-        url,
-        quality: streams[0].q,
-        type: "direct",
-        source: "movy",
-        server: name,
-        format: isDash ? "DASH" : isMp4 ? "MP4" : "HLS",
-        headers: PLAY_HEADERS,
-        subtitles: subs.length ? subs : void 0
-      });
+      const cards = yield buildCards(master, streams);
+      cards.forEach(
+        (c) => out.push({
+          url: c.url,
+          quality: c.q,
+          type: "direct",
+          source: "movy",
+          server: name,
+          format: c.format,
+          note: c.note,
+          headers: PLAY_HEADERS,
+          subtitles: subs.length ? subs : void 0
+        })
+      );
+      if (cards.length)
+        foundAt = foundAt || name;
     }
-    out.sort((a, b) => RANK[b.quality] - RANK[a.quality]);
     if (diag) {
       const sum = Object.keys(why).map((k) => `${why[k]}\xD7 ${k}`).join(", ");
       const secs = Math.round((Date.now() - t0) / 1e3);
       if (!out.length)
         diag.fail(`2. ad\u0131m (sunucular) ba\u015Far\u0131s\u0131z: ${sum || "cevap yok"} \xB7 ${tried} sunucu, ${secs} sn`);
       else
-        diag.step(`${out.length} sunucudan link (${tried} denendi, ${secs} sn)`);
+        diag.step(`${foundAt}: ${out.length} kalite (${tried} sunucu denendi, ${secs} sn)`);
     }
     return out.slice(0, MAX_RESULTS);
   });
@@ -2841,6 +2887,8 @@ function formatStream(s) {
     lines.push(l3.join(SEP));
   if (!isTorrent && s.mbps)
     lines.push(speedLine(s.mbps));
+  if (s.note)
+    lines.push(s.note);
   if (s.fileName)
     lines.push(`\u{1F4C4} ${shortFile(s.fileName, 70)}`);
   return { name, title: lines.join("\n") };

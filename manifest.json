@@ -1,12 +1,12 @@
 {
   "name": "Ultra Stream Repo",
-  "version": "2.4.2",
+  "version": "2.4.4",
   "scrapers": [
     {
       "id": "ultra-arsiv",
       "name": "Ultra Arşiv",
       "description": "📦 111477: 1.4 PB açık arşiv, filmler + diziler, çoğu 4K / REMUX MKV. VPN kapalıyken çalışır (IP başına sınırlı istek).",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -29,8 +29,8 @@
     {
       "id": "ultra-movy",
       "name": "Ultra Movy",
-      "description": "📺 Movy (movy.sx / VyseTV'nin kaynağı): 13 sunucu, Miami ve Boise'de 4K, HLS. İlk 3 çalışan sunucuyu getirir.",
-      "version": "2.4.2",
+      "description": "📺 Movy (movy.sx / VyseTV'nin kaynağı): VyseTV gibi önce Miami'yi sorar. Her kalite ayrı kart (4K/1080p/720p/480p), çözünürlük oynatma listesinden doğrulanır.",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -54,7 +54,7 @@
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). En kaliteli kısım, birkaç saniye daha geç gelir.",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -80,7 +80,7 @@
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "Vidlink + VidRock: 1080p / 720p MP4 ve HLS. Hızlı açılan yedek linkler.",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -106,7 +106,7 @@
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
       "description": "Torrentio: 25+ siteden 4K / 1080p / 720p torrentler, seed sayısıyla. Anında gelir.",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
@@ -132,7 +132,7 @@
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
       "description": "🇹🇷 FilmModu: Türkçe dublaj + Türkçe altyazılı filmler, 1080p / 720p HLS (bazı filmlerde 4K). Altyazı otomatik eklenir.",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie"
@@ -155,7 +155,7 @@
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
       "description": "🇹🇷 Webteizle: Türkçe dublaj + altyazılı filmler (VidMoly, Ok.ru, FileMoon sunucuları).",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "movie"
@@ -178,7 +178,7 @@
       "id": "ultra-sezonlukdizi",
       "name": "Ultra SezonlukDizi",
       "description": "🇹🇷 SezonlukDizi: Türkçe altyazılı + dublaj diziler (VidMoly, Ok.ru, Sibnet sunucuları).",
-      "version": "2.4.2",
+      "version": "2.4.4",
       "author": "Ultra",
       "supportedTypes": [
         "tv"

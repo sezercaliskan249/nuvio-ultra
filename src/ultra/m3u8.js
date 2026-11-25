@@ -16,7 +16,9 @@ function resolveUrl(url, baseUrl) {
 export function qualityFromResolution(resolution) {
   if (!resolution) return "Auto";
   const parts = resolution.split("x").map(Number);
-  const height = parts[1] || 0;
+  // Sinema filmleri geniş ekran (ör. 3840x1608 = 4K, 1920x800 = 1080p): yükseklik tek başına
+  // yanıltır. Genişliği 16:9 karşılığına çevirip ikisinden büyüğünü kullan.
+  const height = Math.max(parts[1] || 0, Math.round(((parts[0] || 0) * 9) / 16 / 10) * 10);
   if (height >= 2160) return "4K";
   if (height >= 1440) return "1440p";
   if (height >= 1080) return "1080p";

@@ -246,6 +246,7 @@ export function formatStream(s) {
   if (l3.length) lines.push(l3.join(SEP));
   if (!isTorrent && s.mbps) lines.push(speedLine(s.mbps));
 
+  if (s.note) lines.push(s.note);
   if (s.fileName) lines.push(`📄 ${shortFile(s.fileName, 70)}`);
 
   return { name, title: lines.join("\n") };

@@ -12,6 +12,7 @@
 import { req } from "../tr/common.js";
 import { getMediaInfo } from "../tmdb.js";
 import { b64decodeBytes, utf8Decode } from "../lib/b64.js";
+import { parseM3U8 } from "../m3u8.js";
 
 const API = "https://api.wecollege.net";
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
@@ -26,10 +27,10 @@ const SERVERS = [
   ["vegas", "Vegas"], ["dallas", "Dallas"], ["reno", "Reno"], ["oakland", "Oakland"],
   ["seattle", "Seattle"], ["phoenix", "Phoenix"], ["atlanta", "Atlanta"], ["portland", "Portland"], ["austin", "Austin"],
 ];
-// Nuvio'da istekler SIRAYLA gider (fetch senkron) ve eklentinin toplam 60 sn'si var.
-// Bu yüzden: 3 çalışan sunucu bulunca veya 30 sn dolunca dur.
-const WANT = 3;
-const BUDGET_MS = 30000;
+// Nuvio'da istekler SIRAYLA gider (fetch senkron). VyseTV de sadece Miami'yi sorup oynatıyor,
+// diğer sunuculara yalnızca o boş dönerse geçiyor. Biz de aynısını yapıyoruz:
+// İLK çalışan sunucuda dur (genelde Miami -> toplam 3 istek). En geç 20 sn'de bırak.
+const BUDGET_MS = 20000;
 const MAX_RESULTS = 8;
 
 // ---- şifre çözme ----------------------------------------------------------
@@ -98,7 +99,53 @@ function quality(raw, url) {
   for (const q of ["1080", "720", "480", "360"]) if (s.indexOf(q) !== -1) return q + "p";
   return "Auto";
 }
-const RANK = { "4K": 5, "1080p": 4, "720p": 3, "480p": 2, "360p": 1, Auto: 3.5 };
+const RANK = { "4K": 5, "1440p": 4.5, "1080p": 4, "720p": 3, "480p": 2, "360p": 1, Auto: 3.5 };
+
+function fmtOf(url) {
+  if (/\.mpd(\?|$)/.test(url)) return "DASH";
+  if (/\/mp4\/|\.mp4(\?|$)/.test(url) && !/\.m3u8/.test(url)) return "MP4";
+  return "HLS";
+}
+
+// VyseTV'deki "Kalite" menüsünün karşılığı: her kalite AYRI kart olur (4K / 1080p / 720p / 480p).
+// Kalite, mümkünse oynatma listesinin içindeki gerçek çözünürlükten (RESOLUTION=3840x2160) okunur;
+// okunamazsa sunucunun verdiği etiket kullanılır ve kartta "etiket" diye belirtilir.
+async function buildCards(master, streams) {
+  // 1) Çözünürlükleri listeden oku: master varsa o, yoksa en iyi akış (o da master olabilir) -> 1 istek
+  const probe = master || (fmtOf(streams[0].url) === "HLS" ? streams[0].url : null);
+  if (probe) {
+    const r = await req(probe, { headers: PLAY_HEADERS, timeout: 6000 });
+    if (r.ok && /#EXT-X-STREAM-INF/.test(r.text || "")) {
+      const best = {};
+      parseM3U8(r.text, r.url || probe).forEach((v) => {
+        if (!v.url || !v.resolution) return;
+        const q = v.quality;
+        if (!(q in RANK)) return;
+        if (!best[q] || (v.bandwidth || 0) > (best[q].bandwidth || 0)) best[q] = v;
+      });
+      const qs = Object.keys(best);
+      if (qs.length) {
+        return qs
+          .sort((a, b) => RANK[b] - RANK[a])
+          .map((q) => {
+            const v = best[q];
+            const mb = v.bandwidth ? `  ·  ~${Math.max(1, Math.round(v.bandwidth / 1e6))} Mbps` : "";
+            return { url: v.url, q, format: "HLS", note: `✅ Doğrulandı: ${v.resolution.replace("x", "×")}${mb}` };
+          });
+      }
+    }
+  }
+  // 2) Liste okunamadı -> sunucunun verdiği her kalite ayrı kart (etiketine göre)
+  const byQ = {};
+  streams.forEach((s) => {
+    if (!byQ[s.q]) byQ[s.q] = s;
+  });
+  const cards = Object.keys(byQ)
+    .sort((a, b) => RANK[b] - RANK[a])
+    .map((q) => ({ url: byQ[q].url, q, format: fmtOf(byQ[q].url), note: "ℹ️ Kalite sunucunun etiketi (doğrulanamadı)" }));
+  if (master) cards.unshift({ url: master, q: "Auto", format: "HLS", note: "🔄 Otomatik kalite (bağlantına göre)" });
+  return cards;
+}
 
 async function getSeed(tmdbId) {
   let r = null;
@@ -149,8 +196,9 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
   const note = (k) => (why[k] = (why[k] || 0) + 1);
   const out = [];
   let tried = 0;
+  let foundAt = null;
   for (const [shard, name, alt] of SERVERS) {
-    if (out.length >= WANT || Date.now() - t0 > BUDGET_MS) break;
+    if (foundAt || Date.now() - t0 > BUDGET_MS) break;
     tried++;
     // Seed ~30 sn yaşar; süresi dolmak üzereyse yenile
     if (Date.now() - S.at > S.ttl - 8000) {
@@ -196,30 +244,31 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
     }
     streams.sort((a, b) => RANK[b.q] - RANK[a.q]);
     const master = typeof data.playlist === "string" && /^https?:/.test(data.playlist) ? data.playlist : null;
-    const url = master || streams[0].url;
-    const isMp4 = /\/mp4\/|\.mp4(\?|$)/.test(url) && !/\.m3u8/.test(url);
-    const isDash = /\.mpd(\?|$)/.test(url);
     const subs = (data.subtitles || data.tracks || [])
       .filter((t) => t && (t.url || t.file))
       .slice(0, 8)
       .map((t) => ({ url: t.url || t.file, language: t.lang || t.language || t.label || "en", name: t.label || t.lang || "Altyazı" }));
-    out.push({
-      url,
-      quality: streams[0].q,
-      type: "direct",
-      source: "movy",
-      server: name,
-      format: isDash ? "DASH" : isMp4 ? "MP4" : "HLS",
-      headers: PLAY_HEADERS,
-      subtitles: subs.length ? subs : undefined,
-    });
+    const cards = await buildCards(master, streams);
+    cards.forEach((c) =>
+      out.push({
+        url: c.url,
+        quality: c.q,
+        type: "direct",
+        source: "movy",
+        server: name,
+        format: c.format,
+        note: c.note,
+        headers: PLAY_HEADERS,
+        subtitles: subs.length ? subs : undefined,
+      })
+    );
+    if (cards.length) foundAt = foundAt || name;
   }
-  out.sort((a, b) => RANK[b.quality] - RANK[a.quality]);
   if (diag) {
     const sum = Object.keys(why).map((k) => `${why[k]}× ${k}`).join(", ");
     const secs = Math.round((Date.now() - t0) / 1000);
     if (!out.length) diag.fail(`2. adım (sunucular) başarısız: ${sum || "cevap yok"} · ${tried} sunucu, ${secs} sn`);
-    else diag.step(`${out.length} sunucudan link (${tried} denendi, ${secs} sn)`);
+    else diag.step(`${foundAt}: ${out.length} kalite (${tried} sunucu denendi, ${secs} sn)`);
   }
   return out.slice(0, MAX_RESULTS);
 }
