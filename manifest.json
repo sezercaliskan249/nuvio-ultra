@@ -1,12 +1,12 @@
 {
   "name": "Nuvio Ultra",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scrapers": [
     {
       "id": "ultra-archive",
       "name": "Ultra Archive",
       "description": "📦 111477 open archive (1.4 PB): movies & series, mostly 4K / REMUX MKV. Works without VPN (limited requests per IP).",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -30,7 +30,7 @@
       "id": "ultra-movy",
       "name": "Ultra Movy",
       "description": "📺 Movy (movy.sx): HLS up to 4K. One card per quality, resolution verified from the playlist.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -54,7 +54,7 @@
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "💎 4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). Best quality, arrives a few seconds later.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -80,7 +80,7 @@
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "⚡ Vidlink + VidRock: fast 1080p / 720p MP4 and HLS links.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -106,7 +106,7 @@
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
       "description": "🧲 Torrentio: 4K / 1080p / 720p torrents from 25+ sites, with seeders. Instant.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -132,7 +132,7 @@
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
       "description": "🇹🇷 FilmModu: Turkish dubbed & subtitled movies, 1080p / 720p HLS. Subtitles added automatically.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
@@ -155,7 +155,7 @@
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
       "description": "🇹🇷 Webteizle: Turkish dubbed & subtitled movies.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
@@ -178,7 +178,7 @@
       "id": "ultra-sezonlukdizi",
       "name": "Ultra SezonlukDizi",
       "description": "🇹🇷 SezonlukDizi: Turkish subtitled & dubbed TV series.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "tv"

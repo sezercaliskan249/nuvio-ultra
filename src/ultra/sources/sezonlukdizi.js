@@ -16,7 +16,18 @@ import { extractEmbed, hostName } from "../tr/extractors.js";
 const CANDIDATES = ["https://sezonlukdizi.cc"];
 const MARKER = /sezonlukdizi/i;
 const SKIP = /netu|pixel/i;
-const MAX_ALT = 6;
+const WANT = 3; // bu kadar çalışan alternatif yeter
+const BUDGET_MS = 30000;
+// Oynatıcı önceliği (sitedeki alternatif adı): düşük = önce denenir
+function hostRank(t) {
+  const s = String(t || "").toLowerCase();
+  if (/vidmoly/.test(s)) return 0;
+  if (/ok\.?ru|okru/.test(s)) return 1;
+  if (/filemoon|moon/.test(s)) return 2;
+  if (/sibnet/.test(s)) return 4;
+  if (/dzen/.test(s)) return 5;
+  return 3;
+}
 
 let aspCache = null;
 
@@ -121,42 +132,61 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
   if (/data-dil="0"/.test(ep.text)) langs.push({ dil: "0", tr: "dublaj" });
   if (!langs.length) langs.push({ dil: "1", tr: "altyazi" });
 
-  let altCount = 0;
-  const lists = await Promise.all(
-    langs.map(async (L) => {
-      const { json } = await reqJson(`${base}/ajax/dataAlternatif${asp.alt}.asp`, { form: { bid, dil: L.dil }, headers: AJ });
-      const alts = (json && json.status === "success" && Array.isArray(json.data) ? json.data : []).filter(
-        (a) => !SKIP.test(a.baslik || "")
-      );
-      altCount += alts.length;
-      const res = await Promise.all(
-        alts.slice(0, MAX_ALT).map(async (a) => {
-          const r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
-          const ifr = (r.text.match(/<iframe[^>]+src=["']([^"']+)["']/i) || [])[1];
-          if (!ifr) return [];
-          const iframe = absUrl(ifr, base);
-          const links = await extractEmbed(iframe, base + "/");
-          return links.map((l) => ({
-            url: l.url,
-            quality: l.quality !== "Auto" ? l.quality : qualityFromText(String(a.kalite || "") + " " + a.baslik, "Auto"),
-            type: "direct",
-            source: "sezonlukdizi",
-            tr: L.tr,
-            host: l.host || hostName(iframe),
-            format: /\.m3u8/i.test(l.url) ? "HLS" : "MP4",
-            headers: l.headers,
-            subtitles: l.subtitles,
-          }));
-        })
-      );
-      return [].concat.apply([], res);
-    })
-  );
-  const out = [].concat.apply([], lists);
+  // Nuvio'da istekler sırayla gittiği için alternatifler de sırayla denenir:
+  // en güvenilir oynatıcılar önce, 3 çalışan bulununca veya süre bütçesi dolunca durulur.
+  const t0 = Date.now();
+  const alts = [];
+  for (const L of langs) {
+    const { json } = await reqJson(`${base}/ajax/dataAlternatif${asp.alt}.asp`, { form: { bid, dil: L.dil }, headers: AJ });
+    (json && json.status === "success" && Array.isArray(json.data) ? json.data : [])
+      .filter((a) => !SKIP.test(a.baslik || ""))
+      .forEach((a) => alts.push({ a, L, rank: hostRank(a.baslik) }));
+  }
+  alts.sort((x, y) => x.rank - y.rank);
+  const altCount = alts.length;
+  const stats = {};
+  const out = [];
+  let working = 0;
+  for (const { a, L } of alts) {
+    if (working >= WANT || Date.now() - t0 > BUDGET_MS) break;
+    const name = String(a.baslik || "?").trim();
+    const st = (stats[name] = stats[name] || { tried: 0, ok: 0, why: "" });
+    st.tried++;
+    const r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
+    const ifr = (r.text.match(/<iframe[^>]+src=["']([^"']+)["']/i) || [])[1];
+    if (!ifr) {
+      st.why = r.ok ? "oynatıcı yok" : `embed ${r.status || "hata"}`;
+      continue;
+    }
+    const iframe = absUrl(ifr, base);
+    const links = await extractEmbed(iframe, base + "/");
+    if (!links.length) {
+      st.why = "çözülemedi";
+      continue;
+    }
+    st.ok++;
+    working++;
+    links.forEach((l) =>
+      out.push({
+        url: l.url,
+        quality: l.quality !== "Auto" ? l.quality : qualityFromText(String(a.kalite || "") + " " + a.baslik, "Auto"),
+        type: "direct",
+        source: "sezonlukdizi",
+        tr: L.tr,
+        host: l.host || hostName(iframe),
+        format: /\.m3u8/i.test(l.url) ? "HLS" : "MP4",
+        headers: l.headers,
+        subtitles: l.subtitles,
+      })
+    );
+  }
   if (diag) {
+    const sum = Object.keys(stats)
+      .map((k) => `${k} ${stats[k].ok}/${stats[k].tried}${stats[k].ok ? "" : " (" + stats[k].why + ")"}`)
+      .join(", ");
     if (!altCount) diag.fail("alternatif listesi boş (dataAlternatif)");
-    else if (!out.length) diag.fail(`${altCount} alternatif var ama hiçbiri çözülemedi`);
-    else diag.step(`${out.length} link (${altCount} alternatif)`);
+    else if (!out.length) diag.fail(`${altCount} alternatif, hiçbiri çözülemedi → ${sum}`);
+    else diag.step(`${out.length} link (${altCount} alternatif → ${sum})`);
   }
   return out;
 }

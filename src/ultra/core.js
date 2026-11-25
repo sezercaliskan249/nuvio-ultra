@@ -29,7 +29,7 @@ const TIMEOUTS = {
   Movy: 50000, // istekler sırayla gider, kendi 20 sn bütçesi var
   FilmModu: 20000,
   Webteizle: 25000,
-  SezonlukDizi: 25000,
+  SezonlukDizi: 50000, // alternatifler sırayla denenir, kendi 30 sn bütçesi var
 };
 
 // Nuvio'nun "Test" butonu her zaman TMDB 603 (Matrix) ile dener. Bu ID gelince

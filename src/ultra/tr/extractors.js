@@ -49,7 +49,8 @@ function hexParam(url) {
 
 // --- VidMoly ----------------------------------------------------------------
 async function vidmoly(url, referer) {
-  let u = url.replace(/\/w\/([a-z0-9]+)/i, "/embed-$1.html");
+  // vidmoly.to / .me / .biz önce JS yönlendirme sayfası veriyor; .net doğrudan oynatıcıyı veriyor
+  let u = url.replace(/\/w\/([a-z0-9]+)/i, "/embed-$1.html").replace(/\/\/(www\.)?vidmoly\.[a-z]+\//i, "//vidmoly.net/");
   const headers = { Referer: referer || "https://vidmoly.net/", "Sec-Fetch-Dest": "iframe" };
   let text = "";
   let finalUrl = u;
@@ -58,6 +59,11 @@ async function vidmoly(url, referer) {
     text = r.text;
     finalUrl = r.url || u;
     if (/sources\s*:/.test(text)) break;
+    const jsRedirect = (text.match(/location\.replace\(\s*['"]([^'"]+)['"]/) || [])[1];
+    if (jsRedirect) {
+      u = absUrl(jsRedirect, finalUrl);
+      continue;
+    }
     await sleep(600);
   }
   const m =
