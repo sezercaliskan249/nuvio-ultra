@@ -2,6 +2,14 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] — 2026-11-25
+### Fixed
+- Ultra SezonlukDizi: the site rate-limits player requests (HTTP 429 after ~4 quick requests). Requests are now spaced out and retried once on 429.
+- Ok.ru: more robust parsing (fallback that reads the `videos` list directly) and detection of blocked / deleted videos.
+- VidMoly: cookies from the redirect page are carried over to the player request.
+### Added
+- The 🔍 line now shows *why* each player failed: host, HTTP status and page title (e.g. `ok.ru 200 video engelli/silinmiş`, `vidmoly.biz 404 sources yok`).
+
 ## [1.0.3] — 2026-11-25
 ### Fixed
 - VidMoly links on `vidmoly.to` / `.biz` returned a JavaScript redirect page instead of the player, so no stream was found. They are now opened on `vidmoly.net` and JS redirects are followed (affects Ultra SezonlukDizi and Ultra Webteizle).

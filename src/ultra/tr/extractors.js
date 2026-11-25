@@ -20,8 +20,21 @@ export function hostName(url) {
   return (originOf(u).replace(/^https?:\/\/(www\.)?/, "").split(".")[0] || "Video").replace(/^./, (c) => c.toUpperCase());
 }
 
+// Son başarısız çözümün kısa nedeni (🔍 satırı için): "vidmoly.biz 200 'Loading...'" gibi
+let lastWhy = "";
+export function lastExtractError() {
+  return lastWhy;
+}
+function why(r, url, extra) {
+  const host = originOf((r && r.url) || url).replace(/^https?:\/\/(www\.)?/, "");
+  const title = r && r.text ? ((r.text.match(/<title>([^<]{0,30})/i) || [])[1] || "").trim() : "";
+  lastWhy = `${host} ${r ? r.status || (r.timeout ? "zaman aşımı" : "bağlantı yok") : ""}${title ? " '" + title + "'" : ""}${extra ? " " + extra : ""}`.trim();
+  return [];
+}
+
 export async function extractEmbed(iframeUrl, referer) {
   const url = absUrl(decodeHtml(iframeUrl), referer);
+  lastWhy = "";
   if (!url) return [];
   const h = hostName(url);
   try {
@@ -35,6 +48,7 @@ export async function extractEmbed(iframeUrl, referer) {
     return await generic(url, referer, h);
   } catch (e) {
     console.log(`[Extract] ${h} hata: ${e && e.message}`);
+    lastWhy = `${h} hata: ${String((e && e.message) || e).slice(0, 40)}`;
     return [];
   }
 }
@@ -54,8 +68,12 @@ async function vidmoly(url, referer) {
   const headers = { Referer: referer || "https://vidmoly.net/", "Sec-Fetch-Dest": "iframe" };
   let text = "";
   let finalUrl = u;
+  let last = null;
+  let cookie = "";
   for (let i = 0; i < 3; i++) {
-    const r = await req(u, { headers, timeout: 8000 });
+    const r = await req(u, { headers: cookie ? Object.assign({ Cookie: cookie }, headers) : headers, timeout: 8000 });
+    last = r;
+    if (r.cookie) cookie = cookie ? cookie + "; " + r.cookie : r.cookie; // JS yönlendirmesi çerez isteyebilir
     text = r.text;
     finalUrl = r.url || u;
     if (/sources\s*:/.test(text)) break;
@@ -69,7 +87,7 @@ async function vidmoly(url, referer) {
   const m =
     text.match(/sources\s*:\s*\[\s*\{\s*file\s*:\s*["']([^"']+)["']/) ||
     text.match(/file\s*:\s*["'](https?:[^"']+\.m3u8[^"']*)["']/);
-  if (!m) return [];
+  if (!m) return why(last, u, "sources yok");
   const origin = originOf(finalUrl);
   const subs = [];
   const tr = text.match(/tracks\s*:\s*\[([\s\S]*?)\]/);
@@ -88,25 +106,39 @@ async function vidmoly(url, referer) {
 const OK_Q = { mobile: "144p", lowest: "240p", low: "360p", sd: "480p", hd: "720p", full: "1080p", quad: "1440p", ultra: "4K" };
 
 async function okru(url) {
-  const id = (url.match(/(?:videoembed|video)\/(\d+)/) || [])[1];
-  if (!id) return [];
-  const r = await req("https://ok.ru/videoembed/" + id, { headers: { "User-Agent": UA }, timeout: 8000 });
+  const id = (url.match(/(?:videoembed|video|live)\/(\d+)/) || url.match(/[?&]mid=(\d+)/) || [])[1];
+  if (!id) return why(null, url, "id yok");
+  const r = await req("https://ok.ru/videoembed/" + id, {
+    headers: { "User-Agent": UA, Accept: "text/html,*/*", "Accept-Language": "en-US,en;q=0.9" },
+    timeout: 8000,
+  });
+  let meta = null;
   const m = r.text.match(/data-options="([^"]+)"/);
-  if (!m) return [];
-  let meta;
-  try {
-    const opts = JSON.parse(decodeHtml(m[1]));
-    meta = opts.flashvars && opts.flashvars.metadata;
-    if (typeof meta === "string") meta = JSON.parse(meta);
-  } catch (e) {
-    return [];
+  if (m) {
+    try {
+      const opts = JSON.parse(decodeHtml(m[1]));
+      meta = opts.flashvars && opts.flashvars.metadata;
+      if (typeof meta === "string") meta = JSON.parse(meta);
+    } catch (e) {}
   }
-  if (!meta || !meta.videos) return [];
-  const vids = meta.videos
-    .filter((v) => v && v.url && OK_Q[v.name])
-    .map((v) => ({ url: absUrl(v.url, "https://ok.ru"), quality: OK_Q[v.name], host: "Ok.ru" }))
+  let videos = meta && meta.videos;
+  if (!videos) {
+    // Cloudstream yöntemi: kaçışları çöz, "videos":[...] dizisini doğrudan bul
+    const t = decodeHtml(r.text).replace(/\\&quot;/g, '"').replace(/\\\\/g, "\\").replace(/\\u([0-9a-f]{4})/gi, (x, h) => String.fromCharCode(parseInt(h, 16))).replace(/\\"/g, '"');
+    const vm = t.match(/"videos"\s*:\s*(\[[^\]]*\])/);
+    try {
+      videos = vm && JSON.parse(vm[1]);
+    } catch (e) {}
+  }
+  if (!videos || !videos.length) {
+    const blocked = /vp_video_stub|notFound|Видео заблокировано|video is blocked|copyright/i.test(r.text);
+    return why(r, "https://ok.ru", blocked ? "video engelli/silinmiş" : "video listesi yok");
+  }
+  const vids = videos
+    .filter((v) => v && v.url && OK_Q[String(v.name).toLowerCase()])
+    .map((v) => ({ url: absUrl(v.url, "https://ok.ru"), quality: OK_Q[String(v.name).toLowerCase()], host: "Ok.ru", headers: { Referer: "https://ok.ru/", Origin: "https://ok.ru" } }))
     .filter((v) => ["1080p", "720p", "480p", "4K", "1440p"].indexOf(v.quality) !== -1);
-  // en iyi 2 kalite yeter
+  if (!vids.length) return why(r, "https://ok.ru", "uygun kalite yok");
   return vids.reverse().slice(0, 2);
 }
 
@@ -117,7 +149,7 @@ async function sibnet(url, referer) {
   if (id) shell = "https://video.sibnet.ru/shell.php?videoid=" + id;
   const r = await req(shell, { headers: { Referer: referer || "https://video.sibnet.ru/" }, timeout: 8000 });
   const m = r.text.match(/player\.src\(\[\{\s*src\s*:\s*"([^"]+)"/) || r.text.match(/src\s*:\s*"(\/v\/[^"]+)"/);
-  if (!m) return [];
+  if (!m) return why(r, shell, "video yok");
   return [{ url: absUrl(m[1], "https://video.sibnet.ru"), quality: "Auto", host: "Sibnet", headers: { Referer: shell } }];
 }
 
@@ -149,7 +181,7 @@ async function filemoon(url, referer) {
   }
   const js = unpack(page) || page;
   const m = js.match(/file\s*:\s*["'](https?:[^"']+\.m3u8[^"']*)["']/) || js.match(/["'](https?:[^"']+\.m3u8[^"']*)["']/);
-  if (!m) return [];
+  if (!m) return why(r, url, "m3u8 yok");
   const origin = originOf(pageUrl);
   return [{ url: m[1], quality: "Auto", host: "FileMoon", headers: { Referer: origin + "/", Origin: origin } }];
 }
@@ -160,7 +192,7 @@ async function dzen(url) {
   const r = await req(url, { timeout: 8000 });
   const t = r.text.replace(/\\u002F/gi, "/").replace(/\\\//g, "/").replace(/\\u0026/gi, "&");
   const m = t.match(/(https:\/\/[^"'\s]+?\.m3u8[^"'\s]*)/);
-  if (!m) return [];
+  if (!m) return why(r, url, "m3u8 yok");
   return [{ url: m[1], quality: "Auto", host: "Dzen" }];
 }
 
@@ -183,7 +215,7 @@ async function generic(url, referer, host) {
     const m2 = t.replace(/\\\//g, "/").match(/(https?:\/\/[^"'\s<>]+?\.m3u8[^"'\s<>]*)/);
     if (m2) out.push(m2[1]);
   }
-  if (!out.length) return [];
+  if (!out.length) return why(r, url, "m3u8 yok");
   // altyazılar (tracks = [{file, label}] veya "tracks":[...])
   const subs = [];
   const tr = t.match(/tracks["']?\s*[:=]\s*\[([\s\S]*?)\]/);

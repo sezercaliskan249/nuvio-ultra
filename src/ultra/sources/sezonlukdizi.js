@@ -9,8 +9,8 @@
  *   5. POST /ajax/dataEmbedNN.asp {id} -> iframe -> extractor (VidMoly, Ok.ru, Sibnet, FileMoon, Dzen)
  */
 
-import { trInfo, req, reqJson, resolveBase, slugify, norm, absUrl, qualityFromText } from "../tr/common.js";
-import { extractEmbed, hostName } from "../tr/extractors.js";
+import { trInfo, req, reqJson, resolveBase, slugify, norm, absUrl, qualityFromText, sleep } from "../tr/common.js";
+import { extractEmbed, hostName, lastExtractError } from "../tr/extractors.js";
 
 // Güncel adres (kullanıcı teyitli)
 const CANDIDATES = ["https://sezonlukdizi.cc"];
@@ -147,12 +147,19 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
   const stats = {};
   const out = [];
   let working = 0;
+  let embedCalls = 0;
   for (const { a, L } of alts) {
     if (working >= WANT || Date.now() - t0 > BUDGET_MS) break;
     const name = String(a.baslik || "?").trim();
     const st = (stats[name] = stats[name] || { tried: 0, ok: 0, why: "" });
     st.tried++;
-    const r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
+    // Site embed isteklerini sınırlıyor (art arda ~4 istekten sonra 429): araya bekleme koy
+    if (embedCalls++) await sleep(1200);
+    let r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
+    if (r.status === 429) {
+      await sleep(3000);
+      r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
+    }
     const ifr = (r.text.match(/<iframe[^>]+src=["']([^"']+)["']/i) || [])[1];
     if (!ifr) {
       st.why = r.ok ? "oynatıcı yok" : `embed ${r.status || "hata"}`;
@@ -161,7 +168,7 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
     const iframe = absUrl(ifr, base);
     const links = await extractEmbed(iframe, base + "/");
     if (!links.length) {
-      st.why = "çözülemedi";
+      st.why = lastExtractError() || "çözülemedi: " + iframe.replace(/^https?:\/\//, "").slice(0, 30);
       continue;
     }
     st.ok++;

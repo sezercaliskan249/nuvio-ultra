@@ -4,7 +4,7 @@
 
 **A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive and Turkish sources — in one repository.**
 
-![version](https://img.shields.io/badge/version-1.0.3-blue)
+![version](https://img.shields.io/badge/version-1.0.4-blue)
 ![plugins](https://img.shields.io/badge/plugins-8-success)
 ![license](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
