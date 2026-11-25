@@ -78,6 +78,14 @@ export function movyDecrypt(enc, seed, id) {
   return utf8Decode(raw, 4);
 }
 
+function describe(r) {
+  if (!r) return "cevap yok";
+  if (r.timeout) return "zaman aşımı";
+  if (!r.status) return "bağlantı kurulamadı";
+  if (/cloudflare|attention required|just a moment|you have been blocked/i.test(r.text || "")) return `Cloudflare engeli (${r.status})`;
+  return `HTTP ${r.status}`;
+}
+
 function quality(raw, url) {
   const s = String(raw || "");
   if (/4K|2160/.test(s) || /2160p/.test(url)) return "4K";
@@ -90,15 +98,19 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
   const info = await getMediaInfo(tmdbId, mediaType);
   const isTv = info.isTv;
   const type = isTv ? "tv" : "movie";
-  const sr = await req(`${API}/seed?mediaId=${tmdbId}`, { headers: H, timeout: 7000 });
+  let sr = null;
   let seed = null;
-  try {
-    seed = JSON.parse(sr.text).seed;
-  } catch (e) {}
+  for (let t = 0; t < 2 && !seed; t++) {
+    sr = await req(`${API}/seed?mediaId=${tmdbId}`, { headers: H, timeout: 7000 });
+    try {
+      seed = JSON.parse(sr.text).seed;
+    } catch (e) {}
+  }
   if (!seed) {
-    diag && diag.fail(`seed alınamadı (${sr.status || (sr.timeout ? "zaman aşımı" : "bağlantı yok")}${/cloudflare|blocked/i.test(sr.text) ? ", Cloudflare engeli" : ""})`);
+    diag && diag.fail(`1. adım (seed) başarısız: ${describe(sr)}`);
     return [];
   }
+  diag && diag.step("1. adım (seed) ✓");
   const title = info.title || info.originalTitle || "";
   const base = [
     "title=" + encodeURIComponent(encodeURIComponent(title)),
@@ -112,17 +124,21 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
   if (isTv) base.push("seasonId=" + (season || 1), "episodeId=" + (episode || 1), "totalSeasons=" + (info.seasons || 1));
 
   let answered = 0;
+  const why = {};
+  const note = (k) => (why[k] = (why[k] || 0) + 1);
   const lists = await Promise.all(
     SERVERS.map(async ([shard, name, alt]) => {
       const q = base.slice();
       if (alt && title) q.push("altTitle=" + encodeURIComponent(encodeURIComponent(title)));
       const r = await req(`${API}/${shard}/sources?${q.join("&")}`, { headers: H, timeout: 8000 });
       const enc = (r.text || "").trim();
-      if (!r.ok || !enc) return [];
+      if (!r.ok) return note(describe(r)), [];
+      if (!enc) return note("boş cevap"), [];
       let data;
       try {
         data = JSON.parse(movyDecrypt(enc, seed, tmdbId));
       } catch (e) {
+        note(/imza/.test(String(e && e.message)) ? "şifre çözülemedi" : "bozuk veri");
         return [];
       }
       answered++;
@@ -134,7 +150,7 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
         seen[url] = 1;
         streams.push({ url, q: quality(s.quality || s.label, url) });
       });
-      if (!streams.length) return [];
+      if (!streams.length) return note("link yok"), [];
       streams.sort((a, b) => RANK[b.q] - RANK[a.q]);
       const master = typeof data.playlist === "string" && /^https?:/.test(data.playlist) ? data.playlist : null;
       const url = master || streams[0].url;
@@ -162,7 +178,8 @@ export async function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
   const out = [].concat.apply([], lists);
   out.sort((a, b) => RANK[b.quality] - RANK[a.quality]);
   if (diag) {
-    if (!out.length) diag.fail(answered ? `${answered} sunucu cevap verdi ama link yok` : "hiçbir sunucu cevap vermedi");
+    const sum = Object.keys(why).map((k) => `${why[k]}× ${k}`).join(", ");
+    if (!out.length) diag.fail(`2. adım (sunucular) başarısız: ${sum || "cevap yok"}`);
     else diag.step(`${out.length} sunucudan link`);
   }
   return out.slice(0, MAX_RESULTS);

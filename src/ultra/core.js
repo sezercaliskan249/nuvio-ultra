@@ -222,14 +222,14 @@ async function getStreamsFor(sourceIds, tag, tmdbId, mediaType, season, episode)
   });
 
   // Test modunda (Matrix): sonuç vermeyen kaynakların teşhisini kart olarak ekle
-  if (isTest) {
+  if (isTest || out.length === 0) {
     active.forEach((src, si) => {
       const d = diags[src.id];
       const gotAny = results[si] && results[si].length;
       if (gotAny || !d || !d.steps.length) return;
       d.steps.slice(-4).forEach((st, k) => {
         const msg = `🔍 ${src.id}: ${st.ok ? "✓" : "✗"} ${st.msg}`;
-        out.push({ name: rankPrefix(60 + k) + msg, title: msg, quality: "Teşhis (sadece Test'te görünür)", url: "https://teshis.invalid/" + encodeURIComponent(src.id) + "/" + k });
+        out.push({ name: rankPrefix(60 + k) + msg, title: msg, quality: "ℹ️ Bilgi satırı: bu kaynak neden link vermedi", url: "https://teshis.invalid/" + encodeURIComponent(src.id) + "/" + k });
       });
     });
   }

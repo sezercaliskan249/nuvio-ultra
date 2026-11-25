@@ -1,6 +1,6 @@
 /**
  * ultra4k - src/ultra4k/ altından üretildi
- * Tarih: 2026-11-25T12:25:09.739Z
+ * Tarih: 2026-11-25T13:01:26.311Z
  */
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -2446,6 +2446,17 @@ function movyDecrypt(enc, seed, id) {
     throw new Error("movy: imza tutmad\u0131");
   return utf8Decode(raw, 4);
 }
+function describe(r) {
+  if (!r)
+    return "cevap yok";
+  if (r.timeout)
+    return "zaman a\u015F\u0131m\u0131";
+  if (!r.status)
+    return "ba\u011Flant\u0131 kurulamad\u0131";
+  if (/cloudflare|attention required|just a moment|you have been blocked/i.test(r.text || ""))
+    return `Cloudflare engeli (${r.status})`;
+  return `HTTP ${r.status}`;
+}
 function quality(raw, url) {
   const s = String(raw || "");
   if (/4K|2160/.test(s) || /2160p/.test(url))
@@ -2461,16 +2472,20 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
     const info = yield getMediaInfo(tmdbId, mediaType);
     const isTv = info.isTv;
     const type = isTv ? "tv" : "movie";
-    const sr = yield req(`${API}/seed?mediaId=${tmdbId}`, { headers: H, timeout: 7e3 });
+    let sr = null;
     let seed = null;
-    try {
-      seed = JSON.parse(sr.text).seed;
-    } catch (e) {
+    for (let t = 0; t < 2 && !seed; t++) {
+      sr = yield req(`${API}/seed?mediaId=${tmdbId}`, { headers: H, timeout: 7e3 });
+      try {
+        seed = JSON.parse(sr.text).seed;
+      } catch (e) {
+      }
     }
     if (!seed) {
-      diag && diag.fail(`seed al\u0131namad\u0131 (${sr.status || (sr.timeout ? "zaman a\u015F\u0131m\u0131" : "ba\u011Flant\u0131 yok")}${/cloudflare|blocked/i.test(sr.text) ? ", Cloudflare engeli" : ""})`);
+      diag && diag.fail(`1. ad\u0131m (seed) ba\u015Far\u0131s\u0131z: ${describe(sr)}`);
       return [];
     }
+    diag && diag.step("1. ad\u0131m (seed) \u2713");
     const title = info.title || info.originalTitle || "";
     const base = [
       "title=" + encodeURIComponent(encodeURIComponent(title)),
@@ -2485,6 +2500,8 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
     if (isTv)
       base.push("seasonId=" + (season || 1), "episodeId=" + (episode || 1), "totalSeasons=" + (info.seasons || 1));
     let answered = 0;
+    const why = {};
+    const note = (k) => why[k] = (why[k] || 0) + 1;
     const lists = yield Promise.all(
       SERVERS.map((_0) => __async(this, [_0], function* ([shard, name, alt]) {
         const q = base.slice();
@@ -2492,12 +2509,15 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
           q.push("altTitle=" + encodeURIComponent(encodeURIComponent(title)));
         const r = yield req(`${API}/${shard}/sources?${q.join("&")}`, { headers: H, timeout: 8e3 });
         const enc = (r.text || "").trim();
-        if (!r.ok || !enc)
-          return [];
+        if (!r.ok)
+          return note(describe(r)), [];
+        if (!enc)
+          return note("bo\u015F cevap"), [];
         let data;
         try {
           data = JSON.parse(movyDecrypt(enc, seed, tmdbId));
         } catch (e) {
+          note(/imza/.test(String(e && e.message)) ? "\u015Fifre \xE7\xF6z\xFClemedi" : "bozuk veri");
           return [];
         }
         answered++;
@@ -2511,7 +2531,7 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
           streams.push({ url: url2, q: quality(s.quality || s.label, url2) });
         });
         if (!streams.length)
-          return [];
+          return note("link yok"), [];
         streams.sort((a, b) => RANK[b.q] - RANK[a.q]);
         const master = typeof data.playlist === "string" && /^https?:/.test(data.playlist) ? data.playlist : null;
         const url = master || streams[0].url;
@@ -2535,8 +2555,9 @@ function getMovyStreams(tmdbId, mediaType, season, episode, diag) {
     const out = [].concat.apply([], lists);
     out.sort((a, b) => RANK[b.quality] - RANK[a.quality]);
     if (diag) {
+      const sum = Object.keys(why).map((k) => `${why[k]}\xD7 ${k}`).join(", ");
       if (!out.length)
-        diag.fail(answered ? `${answered} sunucu cevap verdi ama link yok` : "hi\xE7bir sunucu cevap vermedi");
+        diag.fail(`2. ad\u0131m (sunucular) ba\u015Far\u0131s\u0131z: ${sum || "cevap yok"}`);
       else
         diag.step(`${out.length} sunucudan link`);
     }
@@ -2963,7 +2984,7 @@ function getStreamsFor(sourceIds, tag, tmdbId, mediaType, season, episode) {
         out2.subtitles = s.subtitles;
       return out2;
     });
-    if (isTest) {
+    if (isTest || out.length === 0) {
       active.forEach((src, si) => {
         const d = diags[src.id];
         const gotAny = results[si] && results[si].length;
@@ -2971,7 +2992,7 @@ function getStreamsFor(sourceIds, tag, tmdbId, mediaType, season, episode) {
           return;
         d.steps.slice(-4).forEach((st, k) => {
           const msg = `\u{1F50D} ${src.id}: ${st.ok ? "\u2713" : "\u2717"} ${st.msg}`;
-          out.push({ name: rankPrefix(60 + k) + msg, title: msg, quality: "Te\u015Fhis (sadece Test'te g\xF6r\xFCn\xFCr)", url: "https://teshis.invalid/" + encodeURIComponent(src.id) + "/" + k });
+          out.push({ name: rankPrefix(60 + k) + msg, title: msg, quality: "\u2139\uFE0F Bilgi sat\u0131r\u0131: bu kaynak neden link vermedi", url: "https://teshis.invalid/" + encodeURIComponent(src.id) + "/" + k });
         });
       });
     }
