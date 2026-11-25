@@ -92,6 +92,7 @@ async function embedToIframe(base, id, H, referer) {
     headers: Object.assign({ "X-Requested-With": "XMLHttpRequest", Referer: referer, Origin: base }, H),
   });
   const t = r.text;
+  if (/recaptcha|hcaptcha|turnstile/i.test(t)) return "CAPTCHA";
   const ifr = t.match(/<iframe[^>]+src=["']([^"']+)["']/i);
   if (ifr) return absUrl(ifr[1], base);
   const sm = t.match(/(vidmoly|okru|filemoon|dzen|sibnet)\s*\(\s*['"]([^'"]+)['"]/i);
@@ -137,6 +138,7 @@ export async function getWebteizleStreams(tmdbId, mediaType, season, episode, di
   if (!langs.length) langs.push({ dil: "1", tr: "altyazi" }, { dil: "0", tr: "dublaj" });
 
   let altCount = 0;
+  let captcha = 0;
   const lists = await Promise.all(
     langs.map(async (L) => {
       const alts = (await getAlternatives(base, filmId, L.dil, H, film.url)).filter((a) => !SKIP.test(a.baslik || ""));
@@ -144,6 +146,10 @@ export async function getWebteizleStreams(tmdbId, mediaType, season, episode, di
       const res = await Promise.all(
         alts.slice(0, MAX_ALT).map(async (a) => {
           const iframe = await embedToIframe(base, a.id, H, film.url);
+          if (iframe === "CAPTCHA") {
+            captcha++;
+            return [];
+          }
           if (!iframe) return [];
           const links = await extractEmbed(iframe, film.url);
           return links.map((l) => ({
@@ -165,6 +171,7 @@ export async function getWebteizleStreams(tmdbId, mediaType, season, episode, di
   const out = [].concat.apply([], lists);
   if (diag) {
     if (!altCount) diag.fail("alternatif listesi boş (dataAlternatif)");
+    else if (!out.length && captcha) diag.fail(`site artık oynatıcılar için reCAPTCHA (robot doğrulaması) istiyor — eklentiler bunu geçemez. Ultra FilmModu'yu dene`);
     else if (!out.length) diag.fail(`${altCount} alternatif var ama hiçbiri çözülemedi`);
     else diag.step(`${out.length} link (${altCount} alternatif)`);
   }

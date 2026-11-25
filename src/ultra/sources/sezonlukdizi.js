@@ -148,6 +148,7 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
   const out = [];
   let working = 0;
   let embedCalls = 0;
+  let captcha = 0;
   for (const { a, L } of alts) {
     if (working >= WANT || Date.now() - t0 > BUDGET_MS) break;
     const name = String(a.baslik || "?").trim();
@@ -159,6 +160,13 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
     if (r.status === 429) {
       await sleep(3000);
       r = await req(`${base}/ajax/dataEmbed${asp.embed}.asp`, { form: { id: a.id }, headers: AJ });
+    }
+    if (/recaptcha|hcaptcha|turnstile|g-recaptcha/i.test(r.text)) {
+      // Site, oynatıcıyı göstermeden önce "robot değilim" doğrulaması istiyor: eklenti bunu geçemez
+      st.why = "site reCAPTCHA istiyor";
+      captcha++;
+      if (captcha >= 2) break;
+      continue;
     }
     const ifr = (r.text.match(/<iframe[^>]+src=["']([^"']+)["']/i) || [])[1];
     if (!ifr) {
@@ -192,6 +200,7 @@ export async function getSezonlukDiziStreams(tmdbId, mediaType, season, episode,
       .map((k) => `${k} ${stats[k].ok}/${stats[k].tried}${stats[k].ok ? "" : " (" + stats[k].why + ")"}`)
       .join(", ");
     if (!altCount) diag.fail("alternatif listesi boş (dataAlternatif)");
+    else if (!out.length && captcha) diag.fail(`site artık oynatıcılar için reCAPTCHA (robot doğrulaması) istiyor — eklentiler bunu geçemez. Bu dizi için Ultra FilmModu'yu dene → ${sum}`);
     else if (!out.length) diag.fail(`${altCount} alternatif, hiçbiri çözülemedi → ${sum}`);
     else diag.step(`${out.length} link (${altCount} alternatif → ${sum})`);
   }

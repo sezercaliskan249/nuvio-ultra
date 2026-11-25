@@ -4,7 +4,7 @@
 
 **A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive and Turkish sources — in one repository.**
 
-![version](https://img.shields.io/badge/version-1.0.4-blue)
+![version](https://img.shields.io/badge/version-1.0.5-blue)
 ![plugins](https://img.shields.io/badge/plugins-8-success)
 ![license](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
@@ -32,7 +32,7 @@
 | 3 | **Ultra 4K** | 4KHDHub · MoviesDrive | 4K / 1080p — REMUX, Dolby Vision, HDR | MKV |
 | 4 | **Ultra HD** | Vidlink · VidRock | Fast 1080p / 720p | MP4, HLS |
 | 5 | **Ultra Torrent** | Torrentio | 4K / 1080p / 720p torrents with seeders | Magnet |
-| 6 | **Ultra FilmModu** | FilmModu | 🇹🇷 Turkish dubbed & subtitled movies | HLS |
+| 6 | **Ultra FilmModu** | FilmModu | 🇹🇷 Turkish dubbed & subtitled movies **and series** | HLS |
 | 7 | **Ultra Webteizle** | Webteizle | 🇹🇷 Turkish dubbed & subtitled movies | HLS, MP4 |
 | 8 | **Ultra SezonlukDizi** | SezonlukDizi | 🇹🇷 Turkish subtitled & dubbed series | HLS, MP4 |
 

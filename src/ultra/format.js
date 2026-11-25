@@ -180,15 +180,17 @@ function prettyTracker(raw) {
 // Türk siteleri: dublaj / altyazı vurgulu kart
 function formatTr(s) {
   const q = s.quality || "Auto";
-  const dub = s.tr === "dublaj";
-  const name = (dub ? "🇹🇷 " : "💬 ") + (q === "Auto" ? "HD" : q) + SEP + (dub ? "Türkçe Dublaj" : "Türkçe Altyazılı");
+  const both = s.tr === "ikili"; // tek akışta TR dublaj sesi + TR altyazı
+  const dub = s.tr === "dublaj" || both;
+  const name = (dub ? "🇹🇷 " : "💬 ") + (q === "Auto" ? "HD" : q) + SEP + (both ? "Dublaj + Altyazı" : dub ? "Türkçe Dublaj" : "Türkçe Altyazılı");
   const provider = PROVIDER_NAMES[s.source] || s.source || "";
   const lines = [];
   const l1 = [`📡 ${provider}`];
   l1.push(s.format === "MP4" ? "🎯 MP4" : "📺 HLS");
   if (s.host && s.host !== provider) l1.push(`Sunucu ${s.host}`);
   lines.push(l1.join(SEP));
-  if (dub) lines.push("🔊 Türkçe ses");
+  if (both) lines.push(`🔊 ${s.audioNote || "Türkçe ses"}${SEP}💬 TR altyazı (oynatıcıdan seç)`);
+  else if (dub) lines.push(s.audioNote ? `🔊 ${s.audioNote}` : "🔊 Türkçe ses");
   else if (s.subtitles && s.subtitles.length) lines.push("💬 Türkçe altyazı dosyası otomatik eklenir");
   else lines.push("💬 Altyazı videoya gömülü");
   return { name, title: lines.join("\n") };

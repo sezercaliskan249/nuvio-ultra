@@ -2,6 +2,16 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] — 2026-11-25
+### Fixed
+- **Ultra FilmModu** moved to the new FilmModu site (filmmodu.live → filmmodu.icu, Pilavyer player). The old filmmodu.one video server (imgsapi.pro) now answers every playlist with a plain "404".
+  - One HLS stream per title with Turkish dub + original audio tracks and Turkish / English `.vtt` subtitles.
+  - Titles are verified by original name + year from the page's structured data.
+  - The old site is kept as a fallback and is only used when its playlist is a real m3u8.
+### Added
+- **Ultra FilmModu now supports TV series** (`/dizi/<slug>/sezon-S/bolum-E`).
+- Ultra SezonlukDizi / Ultra Webteizle: detect when the site answers player requests with a reCAPTCHA page and say so clearly in the 🔍 line.
+
 ## [1.0.4] — 2026-11-25
 ### Fixed
 - Ultra SezonlukDizi: the site rate-limits player requests (HTTP 429 after ~4 quick requests). Requests are now spaced out and retried once on 429.
