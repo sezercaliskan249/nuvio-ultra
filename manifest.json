@@ -1,18 +1,18 @@
 {
   "name": "Nuvio Ultra",
-  "version": "2.5.0",
+  "version": "1.0.0",
   "scrapers": [
     {
-      "id": "ultra-arsiv",
-      "name": "Ultra Arşiv",
-      "description": "📦 111477: 1.4 PB açık arşiv, filmler + diziler, çoğu 4K / REMUX MKV. VPN kapalıyken çalışır (IP başına sınırlı istek).",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "id": "ultra-archive",
+      "name": "Ultra Archive",
+      "description": "📦 111477 open archive (1.4 PB): movies & series, mostly 4K / REMUX MKV. Works without VPN (limited requests per IP).",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "providers/ultraarsiv.js",
+      "filename": "providers/ultraarchive.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -29,9 +29,9 @@
     {
       "id": "ultra-movy",
       "name": "Ultra Movy",
-      "description": "📺 Movy (movy.sx / VyseTV'nin kaynağı): VyseTV gibi önce Miami'yi sorar. Her kalite ayrı kart (4K/1080p/720p/480p), çözünürlük oynatma listesinden doğrulanır.",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "📺 Movy (movy.sx): HLS up to 4K. One card per quality, resolution verified from the playlist.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
         "tv"
@@ -53,9 +53,9 @@
     {
       "id": "ultra-4k",
       "name": "Ultra 4K",
-      "description": "4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). En kaliteli kısım, birkaç saniye daha geç gelir.",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "💎 4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). Best quality, arrives a few seconds later.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
         "tv"
@@ -79,9 +79,9 @@
     {
       "id": "ultra-hd",
       "name": "Ultra HD",
-      "description": "Vidlink + VidRock: 1080p / 720p MP4 ve HLS. Hızlı açılan yedek linkler.",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "⚡ Vidlink + VidRock: fast 1080p / 720p MP4 and HLS links.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
         "tv"
@@ -105,9 +105,9 @@
     {
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
-      "description": "Torrentio: 25+ siteden 4K / 1080p / 720p torrentler, seed sayısıyla. Anında gelir.",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "🧲 Torrentio: 4K / 1080p / 720p torrents from 25+ sites, with seeders. Instant.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
         "tv"
@@ -131,9 +131,9 @@
     {
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
-      "description": "🇹🇷 FilmModu: Türkçe dublaj + Türkçe altyazılı filmler, 1080p / 720p HLS (bazı filmlerde 4K). Altyazı otomatik eklenir.",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "🇹🇷 FilmModu: Turkish dubbed & subtitled movies, 1080p / 720p HLS. Subtitles added automatically.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
       ],
@@ -154,9 +154,9 @@
     {
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
-      "description": "🇹🇷 Webteizle: Türkçe dublaj + altyazılı filmler (VidMoly, Ok.ru, FileMoon sunucuları).",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "🇹🇷 Webteizle: Turkish dubbed & subtitled movies.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
       ],
@@ -177,9 +177,9 @@
     {
       "id": "ultra-sezonlukdizi",
       "name": "Ultra SezonlukDizi",
-      "description": "🇹🇷 SezonlukDizi: Türkçe altyazılı + dublaj diziler (VidMoly, Ok.ru, Sibnet sunucuları).",
-      "version": "2.5.0",
-      "author": "Ultra",
+      "description": "🇹🇷 SezonlukDizi: Turkish subtitled & dubbed TV series.",
+      "version": "1.0.0",
+      "author": "sezercaliskan249",
       "supportedTypes": [
         "tv"
       ],

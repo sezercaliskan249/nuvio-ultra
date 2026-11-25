@@ -2,12 +2,11 @@
 
 # 🎬 Nuvio Ultra
 
-**A plugin pack for [Nuvio](https://github.com/tapframe/NuvioMobile): 4K direct links, torrents, a 1.4 PB archive and Turkish sources — in one repository.**
+**A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive and Turkish sources — in one repository.**
 
-![version](https://img.shields.io/badge/version-2.5.0-blue)
+![version](https://img.shields.io/badge/version-1.0.0-blue)
 ![plugins](https://img.shields.io/badge/plugins-8-success)
 ![license](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
-![nuvio](https://img.shields.io/badge/Nuvio-mobile-purple)
 
 </div>
 
@@ -28,7 +27,7 @@
 
 | # | Plugin | Source | Content | Formats |
 |:-:|---|---|---|---|
-| 1 | **Ultra Arşiv** | 111477 open archive | Movies & series, mostly 4K / REMUX | MKV, MP4 |
+| 1 | **Ultra Archive** | 111477 open archive | Movies & series, mostly 4K / REMUX | MKV, MP4 |
 | 2 | **Ultra Movy** | Movy (movy.sx) | HLS up to 4K, one card per quality | HLS |
 | 3 | **Ultra 4K** | 4KHDHub · MoviesDrive | 4K / 1080p — REMUX, Dolby Vision, HDR | MKV |
 | 4 | **Ultra HD** | Vidlink · VidRock | Fast 1080p / 720p | MP4, HLS |
@@ -69,7 +68,7 @@ That line is the reason the source returned nothing. See **[docs/TROUBLESHOOTING
 </details>
 
 <details>
-<summary><b>Ultra Arşiv stopped working after a while</b></summary>
+<summary><b>Ultra Archive stopped working after a while</b></summary>
 
 The archive gives each IP a small pool of link tokens that refills slowly (about 1 every 5 minutes). Wait a bit and try again. It also refuses VPN / datacenter IPs — turn your VPN off.
 </details>
@@ -83,19 +82,10 @@ Torrents are delivered as `magnet:` links. If Nuvio's player can't open them, us
 <details>
 <summary><b>Dolby Vision looks purple / green</b></summary>
 
-Some phones can't decode Dolby Vision. Pick the same quality without the `DV` badge.
+Some devices can't decode Dolby Vision. Pick the same quality without the `DV` badge.
 </details>
 
-## 🛠 Development
-
-```bash
-npm install
-npm run build                         # src/ → providers/ (minified)
-npm test                              # runs every plugin once
-npm run show -- ultra4k 603 movie     # prints cards like Nuvio
-```
-
-Project layout, adding a source and the release process: **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** · Changes: **[CHANGELOG.md](CHANGELOG.md)**
+Changes: **[CHANGELOG.md](CHANGELOG.md)**
 
 ## ⚖️ Disclaimer
 
@@ -103,7 +93,7 @@ This repository does **not host, upload or store any media**. The plugins only l
 
 ## 🙏 Credits
 
-- [Nuvio](https://github.com/tapframe/NuvioMobile) and the [nuvio-providers](https://github.com/yoruix/nuvio-providers) template
+- [Nuvio](https://github.com/tapframe) and the [nuvio-providers](https://github.com/yoruix/nuvio-providers) template
 - Community provider repositories and [VyseTV](https://gitlab.com/ayman707-ux/vysetv) (GPL-3.0), studied and re-implemented here
 - [TMDB](https://www.themoviedb.org/) for metadata
 

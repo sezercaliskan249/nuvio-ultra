@@ -1,6 +1,6 @@
 {
   "name": "nuvio-ultra",
-  "version": "2.5.0",
+  "version": "1.0.0",
   "description": "Nuvio plugins: 4K direct links, torrents, a 1.4 PB archive and Turkish sources",
   "scripts": {
     "build": "node tools/build.js",

@@ -6,7 +6,7 @@ body:
     id: plugin
     attributes:
       label: Plugin
-      options: [Ultra Arşiv, Ultra Movy, Ultra 4K, Ultra HD, Ultra Torrent, Ultra FilmModu, Ultra Webteizle, Ultra SezonlukDizi]
+      options: [Ultra Archive, Ultra Movy, Ultra 4K, Ultra HD, Ultra Torrent, Ultra FilmModu, Ultra Webteizle, Ultra SezonlukDizi]
     validations: { required: true }
   - type: input
     id: title

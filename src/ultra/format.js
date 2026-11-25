@@ -25,7 +25,7 @@ const PROVIDER_NAMES = {
   filmmodu: "FilmModu",
   webteizle: "Webteizle",
   sezonlukdizi: "SezonlukDizi",
-  "111477": "111477 Arşiv",
+  "111477": "111477 Archive",
   movy: "Movy",
 };
 
