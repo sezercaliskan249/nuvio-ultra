@@ -12,7 +12,8 @@
 import { trInfo, req, reqJson, resolveBase, slugify, norm, absUrl, qualityFromText } from "../tr/common.js";
 import { extractEmbed, hostName } from "../tr/extractors.js";
 
-const CANDIDATES = ["https://sezonlukdizi.cc", "https://sezonlukdizi8.com", "https://sezonlukdizi7.com", "https://sezonlukdizi6.com"];
+// Cevap vermeyen adresler çıkarıldı: sezonlukdizi6.com (askıda kalıyor), sezonlukdizi7.com (DNS yok)
+const CANDIDATES = ["https://sezonlukdizi.cc", "https://sezonlukdizi8.com"];
 const MARKER = /sezonlukdizi/i;
 const SKIP = /netu|pixel/i;
 const MAX_ALT = 6;

@@ -10,7 +10,7 @@
 
 import { trInfo, req, reqJson, resolveBase, norm, yearOk, absUrl, decodeHtml, qualityFromText } from "../tr/common.js";
 
-const CANDIDATES = ["https://www.filmmodu.one", "https://www.filmmodu.io", "https://www.filmmodu.ws", "https://www.filmmodu.com"];
+const CANDIDATES = ["https://www.filmmodu.one", "https://www.filmmodu.com"];
 const MARKER = /filmmodu/i;
 
 function parseCards(html, base) {

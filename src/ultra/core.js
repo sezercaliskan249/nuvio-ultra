@@ -45,7 +45,7 @@ const SOURCES = [
   { id: "Torrentio", fn: getTorrentStreams, enabled: true, timeout: 12000 },
   // Dev arşiv + Movy (ikisi de datacenter IP'lerini engelliyor; telefondan çalışır)
   { id: "111477", fn: get111477Streams, enabled: true, timeout: 18000 },
-  { id: "Movy", fn: getMovyStreams, enabled: true, timeout: 18000 },
+  { id: "Movy", fn: getMovyStreams, enabled: true, timeout: 50000 },
   // Türk siteleri (dublaj / altyazı)
   { id: "FilmModu", fn: getFilmModuStreams, enabled: true, timeout: 20000 },
   { id: "Webteizle", fn: getWebteizleStreams, enabled: true, timeout: 25000 },

@@ -175,10 +175,15 @@ export function resolveBase(key, candidates, marker, diag) {
   if (baseCache[key]) return baseCache[key];
   const p = (async () => {
     const reasons = [];
-    // Hepsini paralel başlat; listede önce olan kazanır ama ölü adresleri beklemeyiz
-    const pending = candidates.map((c) => req(c + "/", { timeout: 8000 }));
+    // ÖNEMLİ: Nuvio'da fetch senkron (runBlocking) -> istekler zaten sırayla gider ve
+    // süre sınırı uygulanamaz (OkHttp 60 sn). Bu yüzden adresler TEK TEK denenir,
+    // ilk çalışan veya Cloudflare ile engellenen adreste durulur.
     for (let i = 0; i < candidates.length; i++) {
-      const r = await pending[i];
+      const r = await req(candidates[i] + "/", { timeout: 8000 });
+      if (!r.ok && /cloudflare/i.test(whyFailed(r))) {
+        reasons.push(`${candidates[i].replace(/^https?:\/\//, "")}: ${whyFailed(r)}`);
+        break;
+      }
       if (r.ok && marker.test(r.text)) {
         const base = originOf(r.url) || candidates[i];
         if (diag) diag.step(`adres ✓ ${base.replace(/^https?:\/\//, "")}`);

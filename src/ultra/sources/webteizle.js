@@ -12,7 +12,8 @@
 import { trInfo, req, reqJson, resolveBase, slugify, norm, yearOk, absUrl, qualityFromText } from "../tr/common.js";
 import { extractEmbed, hostName } from "../tr/extractors.js";
 
-const CANDIDATES = ["https://webteizle.info", "https://webteizle3.xyz", "https://webteizle2.com", "https://webteizle.org"];
+// Cevap vermeyen (telefonda 60 sn bekleten) adresler çıkarıldı: webteizle3.xyz, webteizle.org
+const CANDIDATES = ["https://webteizle.info", "https://webteizle2.com"];
 const MARKER = /webteizle/i;
 const SKIP = /netu|uptobox|streamsb|fragman|youtube/i;
 const MAX_ALT = 6;
