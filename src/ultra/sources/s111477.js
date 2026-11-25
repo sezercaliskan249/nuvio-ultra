@@ -64,7 +64,7 @@ export async function get111477Streams(tmdbId, mediaType, season, episode, diag)
       else if (r.status >= 500) why = `111477 sunucusu hata veriyor (${r.status}) — kaynak tarafında`;
       else why = `eklenti cevap vermedi (${r.status || (r.timeout ? "zaman aşımı" : "bağlantı yok")})`;
       diag && diag.fail(why);
-      if (r.status === 429 || r.status >= 500) break; // ikinci adresi denemek boşa jeton/zaman
+      if (r.status === 429 || r.status >= 500) return []; // ikinci adresi denemek boşa jeton/zaman
       continue;
     }
     let json = null;
