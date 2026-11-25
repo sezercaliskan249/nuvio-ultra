@@ -1,18 +1,18 @@
 {
   "name": "Ultra Stream Repo",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "scrapers": [
     {
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). En kaliteli kısım, birkaç saniye daha geç gelir.",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "ultra4k.js",
+      "filename": "providers/ultra4k.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -23,6 +23,30 @@
         "mkv",
         "mp4",
         "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-arsiv",
+      "name": "Ultra Arşiv",
+      "description": "📦 111477: 1.4 PB açık arşiv, filmler + diziler, çoğu 4K / REMUX MKV. VPN kapalıyken çalışır (IP başına sınırlı istek).",
+      "version": "2.4.0",
+      "author": "Ultra",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/ultraarsiv.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "en"
+      ],
+      "formats": [
+        "mkv",
+        "mp4"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -32,13 +56,13 @@
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "Vidlink + VidRock: 1080p / 720p MP4 ve HLS. Hızlı açılan yedek linkler.",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "ultrahd.js",
+      "filename": "providers/ultrahd.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -55,16 +79,40 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "ultra-torrent",
-      "name": "Ultra Torrent",
-      "description": "Torrentio: 25+ siteden 4K / 1080p / 720p torrentler, seed sayısıyla. Anında gelir.",
-      "version": "2.3.0",
+      "id": "ultra-movy",
+      "name": "Ultra Movy",
+      "description": "📺 Movy (VyseTV'nin kaynağı): 12 sunucu, 4K'ya kadar HLS, hızlı açılır.",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie",
         "tv"
       ],
-      "filename": "ultratorrent.js",
+      "filename": "providers/ultramovy.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "en"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-torrent",
+      "name": "Ultra Torrent",
+      "description": "Torrentio: 25+ siteden 4K / 1080p / 720p torrentler, seed sayısıyla. Anında gelir.",
+      "version": "2.4.0",
+      "author": "Ultra",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/ultratorrent.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -84,12 +132,12 @@
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
       "description": "🇹🇷 FilmModu: Türkçe dublaj + Türkçe altyazılı filmler, 1080p / 720p HLS (bazı filmlerde 4K). Altyazı otomatik eklenir.",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie"
       ],
-      "filename": "trfilmmodu.js",
+      "filename": "providers/trfilmmodu.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -107,12 +155,12 @@
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
       "description": "🇹🇷 Webteizle: Türkçe dublaj + altyazılı filmler (VidMoly, Ok.ru, FileMoon sunucuları).",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "movie"
       ],
-      "filename": "trwebteizle.js",
+      "filename": "providers/trwebteizle.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
@@ -130,12 +178,12 @@
       "id": "ultra-sezonlukdizi",
       "name": "Ultra SezonlukDizi",
       "description": "🇹🇷 SezonlukDizi: Türkçe altyazılı + dublaj diziler (VidMoly, Ok.ru, Sibnet sunucuları).",
-      "version": "2.3.0",
+      "version": "2.4.0",
       "author": "Ultra",
       "supportedTypes": [
         "tv"
       ],
-      "filename": "trsezonluk.js",
+      "filename": "providers/trsezonluk.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
