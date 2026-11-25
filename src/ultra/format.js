@@ -21,7 +21,6 @@ const PROVIDER_NAMES = {
   moviesdrive: "MoviesDrive",
   vidlink: "Vidlink",
   vidrock: "VidRock",
-  vixsrc: "Vixsrc",
   torrentio: "Torrentio",
   filmmodu: "FilmModu",
   webteizle: "Webteizle",
@@ -75,7 +74,6 @@ function linkTypeLabel(s) {
   if (s.source === "movy") return `${s.format === "DASH" ? "📺 DASH" : s.format === "MP4" ? "🎯 MP4" : "📺 HLS"}  ·  Sunucu ${s.server || "?"}`;
   if (s.source === "vidlink") return "🎯 MP4  ·  Sarılabilir";
   if (s.source === "vidrock") return `📺 HLS  ·  Sunucu ${s.server || "?"}`;
-  if (s.source === "vixsrc") return "📺 HLS";
   return "🔗 Direkt";
 }
 

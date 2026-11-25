@@ -1,26 +1,35 @@
 {
-  "name": "nuvio-ultra-plugin",
-  "version": "1.0.0",
-  "description": "Nuvio için 720p / 1080p / 4K direkt link + torrent destekli plugin",
+  "name": "nuvio-ultra",
+  "version": "2.5.0",
+  "description": "Nuvio plugins: 4K direct links, torrents, a 1.4 PB archive and Turkish sources",
   "scripts": {
-    "build": "node build.js ultra ultra4k ultrahd ultratorrent trfilmmodu trwebteizle trsezonluk ultraarsiv ultramovy",
-    "build:watch": "nodemon --watch src -e js,json --exec \"node build.js\"",
-    "start": "node server.js",
-    "test": "node test.js",
-    "verify": "node verify.js"
+    "build": "node tools/build.js",
+    "build:dev": "node tools/build.js --dev",
+    "test": "node tools/test.js",
+    "show": "node tools/show.js",
+    "verify": "node tools/verify.js",
+    "serve": "node tools/serve.js"
   },
   "devDependencies": {
-    "cheerio": "^1.1.2",
     "cheerio-without-node-native": "^0.20.2",
     "crypto-js": "^4.2.0",
-    "esbuild": "^0.20.0",
-    "nodemon": "^3.0.0"
+    "esbuild": "^0.20.0"
   },
   "keywords": [
     "nuvio",
+    "nuvio-plugin",
+    "nuvio-providers",
     "streaming",
-    "plugin",
-    "provider"
+    "4k",
+    "torrent"
   ],
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sezercaliskan249/nuvio-ultra.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

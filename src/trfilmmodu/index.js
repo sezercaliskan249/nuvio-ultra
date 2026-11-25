@@ -1,3 +1,5 @@
-/** Ultra FilmModu — Türkçe dublaj + altyazılı filmler (filmmodu) */
+/** Ultra FilmModu — Turkish dubbed / subtitled movies. */
 import { makeGetStreams } from "../ultra/core.js";
-module.exports = { getStreams: makeGetStreams(["FilmModu"], "Ultra FilmModu") };
+import { getFilmModuStreams } from "../ultra/sources/filmmodu.js";
+
+module.exports = { getStreams: makeGetStreams({ FilmModu: getFilmModuStreams }, "Ultra FilmModu") };

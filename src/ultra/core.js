@@ -1,31 +1,13 @@
 /**
- * Ultra Stream - Nuvio Plugin Ana Giriş
- * Direkt HTTP linkler (720p / 1080p / 4K) + Torrent linkler
- *
+ * Ultra — ortak çekirdek
  * Nuvio çağırır: getStreams(tmdbId, mediaType, season, episode) -> Promise<Stream[]>
  *
- * Direkt kaynaklar (paralel, her biri kendi süre sınırıyla):
- *   - 4KHDHub     : 4K / 1080p MKV (REMUX, DV, HDR)      — 4K'nın ana kaynağı
- *   - MoviesDrive : 720p / 1080p / 4K MKV (doğrulanmış)  — ikinci 4K kaynağı
- *   - Vidlink     : 360p-1080p MP4                       — en hızlı
- *   - VidRock     : 480p-1080p HLS, İngilizce sunucular  — hızlı yedek
- *   - Vixsrc      : HLS (Cloudflare izin verirse)        — bonus
- * Torrent:
- *   - Torrentio   : 25+ site, 4K / 1080p / 720p magnet
+ * Kaynakları paralel çalıştırır (her biri kendi süre sınırıyla), sonuçları
+ * birleştirir, tekrarları atar, sıralar, kart etiketlerini üretir ve link
+ * gelmezse nedenini "🔍" teşhis satırıyla gösterir.
  */
 
-import { get4KHDHubStreams } from "./sources/fourkhdhub.js";
-import { getMoviesDriveStreams } from "./sources/moviesdrive.js";
-import { getVidlinkStreams } from "./sources/vidlink.js";
-import { getVidrockStreams } from "./sources/vidrock.js";
-import { getVixsrcStreams } from "./sources/vixsrc.js";
-import { getTorrentStreams } from "./sources/torrentio.js";
-import { getFilmModuStreams } from "./sources/filmmodu.js";
-import { getWebteizleStreams } from "./sources/webteizle.js";
-import { getSezonlukDiziStreams } from "./sources/sezonlukdizi.js";
 import { makeDiag } from "./tr/common.js";
-import { get111477Streams } from "./sources/s111477.js";
-import { getMovyStreams } from "./sources/movy.js";
 import { qualityPriority } from "./m3u8.js";
 import { withTimeout } from "./http.js";
 import { formatStream } from "./format.js";
@@ -34,23 +16,21 @@ import { getMediaInfo } from "./tmdb.js";
 // ---------------------------------------------------------------------------
 // AYARLAR
 // ---------------------------------------------------------------------------
-const SOURCES = [
-  // id, fonksiyon, açık mı, süre sınırı (ms)
-  // Vixsrc: Cloudflare engelliyor -> kapalı (boşa istek atmasın)
-  { id: "4KHDHub", fn: get4KHDHubStreams, enabled: true, timeout: 25000 },
-  { id: "MoviesDrive", fn: getMoviesDriveStreams, enabled: true, timeout: 25000 },
-  { id: "Vidlink", fn: getVidlinkStreams, enabled: true, timeout: 10000 },
-  { id: "VidRock", fn: getVidrockStreams, enabled: true, timeout: 10000 },
-  { id: "Vixsrc", fn: getVixsrcStreams, enabled: false, timeout: 8000 },
-  { id: "Torrentio", fn: getTorrentStreams, enabled: true, timeout: 12000 },
-  // Dev arşiv + Movy (ikisi de datacenter IP'lerini engelliyor; telefondan çalışır)
-  { id: "111477", fn: get111477Streams, enabled: true, timeout: 18000 },
-  { id: "Movy", fn: getMovyStreams, enabled: true, timeout: 50000 },
-  // Türk siteleri (dublaj / altyazı)
-  { id: "FilmModu", fn: getFilmModuStreams, enabled: true, timeout: 20000 },
-  { id: "Webteizle", fn: getWebteizleStreams, enabled: true, timeout: 25000 },
-  { id: "SezonlukDizi", fn: getSezonlukDiziStreams, enabled: true, timeout: 25000 },
-];
+// Her kaynağın süre sınırı (ms). Kaynak fonksiyonları burada İMPORT EDİLMEZ:
+// her eklenti (src/<eklenti>/index.js) sadece kendi kaynaklarını verir, böylece
+// derlenen dosyada başka kaynakların kodu bulunmaz (küçük dosya, hızlı yükleme).
+const TIMEOUTS = {
+  "4KHDHub": 25000,
+  MoviesDrive: 25000,
+  Vidlink: 10000,
+  VidRock: 10000,
+  Torrentio: 12000,
+  111477: 18000, // datacenter IP'lerini engelliyor; telefondan çalışır
+  Movy: 50000, // istekler sırayla gider, kendi 20 sn bütçesi var
+  FilmModu: 20000,
+  Webteizle: 25000,
+  SezonlukDizi: 25000,
+};
 
 // Nuvio'nun "Test" butonu her zaman TMDB 603 (Matrix) ile dener. Bu ID gelince
 // sonuç bulunamazsa nedenini kart olarak gösteririz (teşhis). Sadece dizi
@@ -79,7 +59,6 @@ function directScore(s) {
     return v;
   }
   if (s.source === "vidlink") return 42;
-  if (s.source === "vixsrc") return 38;
   if (s.source === "vidrock") return 30 + (s.prio || 0);
   if (s.tr) {
     const host = { "Ok.ru": 6, FilmModu: 6, VidMoly: 5, PlayerJS: 4, Sibnet: 3, FileMoon: 2, Dzen: 1 };
@@ -138,13 +117,18 @@ function rankPrefix(i) {
   return RANK_CHARS[(n >> 4) & 3] + RANK_CHARS[(n >> 2) & 3] + RANK_CHARS[n & 3];
 }
 
-export function makeGetStreams(sourceIds, tag) {
+/**
+ * @param {Object<string, Function>} sources  { "Kaynak adı": getXStreams, ... }
+ * @param {string} tag  eklentinin görünen adı (loglar için)
+ */
+export function makeGetStreams(sources, tag) {
+  const active = Object.keys(sources).map((id) => ({ id, fn: sources[id], timeout: TIMEOUTS[id] || 20000 }));
   return function (tmdbId, mediaType, season, episode) {
-    return getStreamsFor(sourceIds, tag || "Ultra", tmdbId, mediaType, season, episode);
+    return getStreamsFor(active, tag || "Ultra", tmdbId, mediaType, season, episode);
   };
 }
 
-async function getStreamsFor(sourceIds, tag, tmdbId, mediaType, season, episode) {
+async function getStreamsFor(active, tag, tmdbId, mediaType, season, episode) {
   const t0 = Date.now();
   const isTest = String(tmdbId) === TEST_TMDB;
   if (isTest && (mediaType === "tv" || mediaType === "series")) {
@@ -154,7 +138,6 @@ async function getStreamsFor(sourceIds, tag, tmdbId, mediaType, season, episode)
   }
   console.log(`[${tag}] İstek: ${mediaType} tmdb=${tmdbId} s=${season} e=${episode}`);
 
-  const active = SOURCES.filter((s) => s.enabled && (!sourceIds || sourceIds.indexOf(s.id) !== -1));
   const diags = {};
   const results = await Promise.all(
     active.map((src) => {

@@ -1,3 +1,5 @@
-/** Ultra SezonlukDizi — Türkçe altyazılı + dublaj diziler (sezonlukdizi) */
+/** Ultra SezonlukDizi — Turkish subtitled / dubbed TV series. */
 import { makeGetStreams } from "../ultra/core.js";
-module.exports = { getStreams: makeGetStreams(["SezonlukDizi"], "Ultra SezonlukDizi") };
+import { getSezonlukDiziStreams } from "../ultra/sources/sezonlukdizi.js";
+
+module.exports = { getStreams: makeGetStreams({ SezonlukDizi: getSezonlukDiziStreams }, "Ultra SezonlukDizi") };

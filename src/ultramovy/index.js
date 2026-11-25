@@ -1,3 +1,5 @@
-/** Ultra Movy — Movy (vidy.st) sunucuları: 4K'ya kadar HLS */
+/** Ultra Movy — Movy (movy.sx) HLS, up to 4K, one card per verified quality. */
 import { makeGetStreams } from "../ultra/core.js";
-module.exports = { getStreams: makeGetStreams(["Movy"], "Ultra Movy") };
+import { getMovyStreams } from "../ultra/sources/movy.js";
+
+module.exports = { getStreams: makeGetStreams({ Movy: getMovyStreams }, "Ultra Movy") };

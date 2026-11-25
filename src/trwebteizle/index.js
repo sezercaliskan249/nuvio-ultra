@@ -1,3 +1,5 @@
-/** Ultra Webteizle — Türkçe dublaj + altyazılı filmler (webteizle) */
+/** Ultra Webteizle — Turkish dubbed / subtitled movies. */
 import { makeGetStreams } from "../ultra/core.js";
-module.exports = { getStreams: makeGetStreams(["Webteizle"], "Ultra Webteizle") };
+import { getWebteizleStreams } from "../ultra/sources/webteizle.js";
+
+module.exports = { getStreams: makeGetStreams({ Webteizle: getWebteizleStreams }, "Ultra Webteizle") };

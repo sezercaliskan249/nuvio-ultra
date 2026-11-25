@@ -1,0 +1,31 @@
+name: Source not working
+description: A plugin returns no links, wrong links, or links that don't play
+labels: ["source"]
+body:
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options: [Ultra Arşiv, Ultra Movy, Ultra 4K, Ultra HD, Ultra Torrent, Ultra FilmModu, Ultra Webteizle, Ultra SezonlukDizi]
+    validations: { required: true }
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      placeholder: "e.g. Dune: Part Two (2024) or Breaking Bad S01E01"
+    validations: { required: true }
+  - type: textarea
+    id: diag
+    attributes:
+      label: The 🔍 line (if any)
+      description: Copy the exact text of the 🔍 line shown in Nuvio.
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened?
+      placeholder: No links / link doesn't play / freezes after a few minutes…
+  - type: input
+    id: device
+    attributes:
+      label: Device & Nuvio version
+      placeholder: e.g. Samsung S23, Nuvio 1.x
