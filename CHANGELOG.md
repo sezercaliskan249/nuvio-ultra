@@ -2,6 +2,12 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] — 2026-11-25
+### Fixed
+- Ultra SezonlukDizi: shows listed under their English name (e.g. *Money Heist* vs. *La casa de papel*) were not found. The plugin now tries the English, original and Turkish titles, falls back to the site's own search by **IMDb ID**, reads the real episode slug from the show page and checks the IMDb ID so a different show with the same name is never picked.
+- Ultra Webteizle and Ultra FilmModu also search by the English title.
+- The 🔍 line lists the tried addresses and the number of search results when a show isn't found.
+
 ## [1.0.1] — 2026-11-25
 ### Changed
 - Ultra Archive: clear 🔍 messages when the 111477 add-on service is down ("Account suspended"), rate-limited (429) or returning server errors, instead of a generic "no answer". It no longer retries in those cases.

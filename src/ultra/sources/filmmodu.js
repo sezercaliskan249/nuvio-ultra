@@ -66,7 +66,7 @@ export async function getFilmModuStreams(tmdbId, mediaType, season, episode, dia
   }
   if (!card) {
     checkYear = true;
-    const terms = [info.titleOrig, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i);
+    const terms = [info.titleOrig, info.titleEn, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i);
     for (const t of terms) {
       card = (await suggest(base, t, H)).find(same) || null;
       if (!card) card = (await search(base, t, H)).find((c) => same(c) && yearOk(c.year, info.year)) || null;

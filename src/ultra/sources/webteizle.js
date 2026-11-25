@@ -28,7 +28,7 @@ function pageMatches(html, info) {
 }
 
 async function findFilm(base, info, H, diag) {
-  const slugs = [slugify(info.titleOrig), slugify(info.titleTr)].filter((s, i, a) => s && a.indexOf(s) === i);
+  const slugs = [slugify(info.titleOrig), slugify(info.titleEn), slugify(info.titleTr)].filter((s, i, a) => s && a.indexOf(s) === i);
   const cands = [];
   slugs.forEach((s) => {
     cands.push(`${base}/izle/altyazi/${s}`, `${base}/izle/dublaj/${s}`);
@@ -40,7 +40,7 @@ async function findFilm(base, info, H, diag) {
     }
   }
   // Arama
-  for (const q of [info.titleOrig, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i)) {
+  for (const q of [info.titleOrig, info.titleEn, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i)) {
     const { json } = await reqJson(`${base}/ajax/arama.asp`, {
       form: { q },
       headers: Object.assign({ "X-Requested-With": "XMLHttpRequest" }, H),

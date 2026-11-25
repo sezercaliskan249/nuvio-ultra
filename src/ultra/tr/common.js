@@ -20,7 +20,7 @@ export function trInfo(tmdbId, mediaType) {
   if (infoCache[key]) return infoCache[key];
   const url =
     `https://api.themoviedb.org/3/${isTv ? "tv" : "movie"}/${tmdbId}` +
-    `?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=external_ids`;
+    `?api_key=${TMDB_API_KEY}&language=tr-TR&append_to_response=external_ids,translations`;
   const p = fetch(url)
     .then((r) => r.json())
     .then((d) => {
@@ -28,6 +28,11 @@ export function trInfo(tmdbId, mediaType) {
       return {
         titleTr: (isTv ? d.name : d.title) || "",
         titleOrig: (isTv ? d.original_name : d.original_title) || "",
+        // İngilizce isim (sitelerin çoğu dizileri İngilizce adıyla listeliyor)
+        titleEn: (() => {
+          const t = ((d.translations && d.translations.translations) || []).find((x) => x.iso_639_1 === "en" && x.data && (x.data.name || x.data.title));
+          return t ? t.data.name || t.data.title : "";
+        })(),
         year: parseInt(date.slice(0, 4), 10) || 0,
         lastYear: parseInt(String(d.last_air_date || "").slice(0, 4), 10) || 0,
         imdbId: (d.external_ids && d.external_ids.imdb_id) || d.imdb_id || null,

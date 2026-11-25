@@ -30,20 +30,35 @@ async function getAsp(base, H) {
   return aspCache;
 }
 
+const NOT_FOUND = /Sayfa Bulunamad|Haydaaa|404 Not Found/i;
+
+// Dizi sayfasından bölüm URL'lerinde kullanılan slug'ı oku. IMDb tutmuyorsa (başka dizi) null.
+function readShowPage(html, info, fallback) {
+  if (!html || NOT_FOUND.test(html)) return null;
+  const imdb = (html.match(/imdb\.com\/title\/(tt\d+)/i) || [])[1];
+  if (imdb && info.imdbId && imdb !== info.imdbId) return null;
+  const dizi = (html.match(/data-dizi="([^"]+)"/) || [])[1];
+  const ep = (html.match(/href="\/([^/"]+)\/\d+-sezon-\d+-bolum\.html/i) || [])[1];
+  if (dizi || ep) return dizi || ep;
+  return /sezonlukdizi/i.test(html) && /class="[^"]*imdb/.test(html) ? fallback : null;
+}
+
 async function findShow(base, info, H, diag) {
-  const slugs = [slugify(info.titleOrig), slugify(info.titleTr)].filter((s, i, a) => s && a.indexOf(s) === i);
-  const rs = await Promise.all(slugs.map((s) => req(`${base}/diziler/${s}.html`, { headers: H })));
-  for (let i = 0; i < rs.length; i++) {
-    const r = rs[i];
-    if (!r.ok || /Sayfa Bulunamad|Haydaaa/i.test(r.text)) continue;
-    // Bölüm linklerinden gerçek slug'ı al
-    const m = r.text.match(/href="\/([^/"]+)\/\d+-sezon-\d+-bolum\.html/i);
-    const yearHit = !info.year || r.text.indexOf(String(info.year)) !== -1;
-    if (m && yearHit) return m[1];
-    if (m) return m[1];
+  const titles = [info.titleEn, info.titleOrig, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i);
+  const slugs = titles.map(slugify).filter((s, i, a) => s && a.indexOf(s) === i);
+  // 1) Doğrudan dizi sayfası (sırayla; Nuvio'da istekler zaten sırayla gidiyor)
+  for (const s of slugs) {
+    const r = await req(`${base}/diziler/${s}.html`, { headers: H });
+    const slug = r.ok ? readShowPage(r.text, info, s) : null;
+    if (slug) {
+      diag && diag.step(`dizi ✓ /diziler/${s}.html`);
+      return slug;
+    }
   }
-  // Arama
-  for (const q of [info.titleOrig, info.titleTr].filter((t, i, a) => t && a.indexOf(t) === i)) {
+  // 2) Sitenin kendi araması (IMDb ID ile de arıyor: "Dizi, Oyuncu, Imdb id")
+  const queries = (info.imdbId ? [info.imdbId] : []).concat(titles.slice(0, 2));
+  let seen = 0;
+  for (const q of queries) {
     const { json } = await reqJson(`${base}/ajax/arama.asp`, {
       form: { q },
       headers: Object.assign({ "X-Requested-With": "XMLHttpRequest" }, H),
@@ -55,14 +70,24 @@ async function findShow(base, info, H, diag) {
         (g && g.results ? g.results : []).forEach((it) => items.push(it));
       });
     }
+    const shows = items.filter((it) => /\/diziler\/[^/.]+\.html/.test(String(it.url || "")));
+    seen += shows.length;
+    const nm = (it) => norm(it.title || it.name || "");
     const pick =
-      items.find((it) => norm(it.title || it.name) === norm(info.titleOrig)) ||
-      items.find((it) => norm(it.title || it.name) === norm(info.titleTr)) ||
-      items.find((it) => norm(it.title || it.name).indexOf(norm(info.titleOrig)) === 0);
-    const m = pick && String(pick.url || "").match(/\/diziler\/([^/.]+)\.html/);
-    if (m) return m[1];
+      (q === info.imdbId ? shows[0] : null) ||
+      shows.find((it) => titles.some((t) => nm(it) === norm(t))) ||
+      shows.find((it) => titles.some((t) => nm(it).indexOf(norm(t)) === 0)) ||
+      (shows.length === 1 ? shows[0] : null);
+    if (!pick) continue;
+    const s = String(pick.url).match(/\/diziler\/([^/.]+)\.html/)[1];
+    const r = await req(`${base}/diziler/${s}.html`, { headers: H });
+    const slug = readShowPage(r.text, info, s);
+    if (slug) {
+      diag && diag.step(`dizi ✓ arama "${q}" → ${s}`);
+      return slug;
+    }
   }
-  diag && diag.fail(`dizi bulunamadı (${slugs[0] || "?"})`);
+  diag && diag.fail(`dizi bulunamadı (denendi: ${slugs.join(", ") || "?"} · arama: ${seen} sonuç)`);
   return null;
 }
 
