@@ -20,7 +20,6 @@ Nuvio her eklentinin sonucunu hazır olduğu anda gösterir; hızlılar yavaşla
 https://raw.githubusercontent.com/sezercaliskan249/nuvio-ultra/main/manifest.json
 ```
 Nuvio → **Ayarlar → Plugins / Eklentiler → Repository ekle** → yukarıdaki adresi yapıştır
-(Bu adresi Nuvio → Ayarlar → Eklentiler → Depo ekle kısmına yapıştır.)
 
 **Test butonu:** her eklentinin Test'i Matrix (dizi eklentilerinde Breaking Bad 1x01) ile dener.
 Bir kaynak çalışmazsa nedeni `🔍 …` satırıyla görünür (Cloudflare engeli, IP engeli, jeton bitti…).
