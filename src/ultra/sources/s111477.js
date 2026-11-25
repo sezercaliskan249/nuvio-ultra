@@ -57,7 +57,14 @@ export async function get111477Streams(tmdbId, mediaType, season, episode, diag)
       : `${BASE}/stream/movie/${target}.json`;
     const r = await req(url, { headers: { Accept: "application/json" }, timeout: 15000 });
     if (!r.ok) {
-      diag && diag.fail(`eklenti cevap vermedi (${r.status || (r.timeout ? "zaman aşımı" : "bağlantı yok")})`);
+      const body = String(r.text || "");
+      let why;
+      if (/account suspended/i.test(body)) why = "111477 sunucusu kapalı (hosting askıya alındı) — kaynak tarafında, düzelince kendiliğinden çalışır";
+      else if (r.status === 429 || /error code: 1015/.test(body)) why = "çok sık istek (429), 1 dakika bekle";
+      else if (r.status >= 500) why = `111477 sunucusu hata veriyor (${r.status}) — kaynak tarafında`;
+      else why = `eklenti cevap vermedi (${r.status || (r.timeout ? "zaman aşımı" : "bağlantı yok")})`;
+      diag && diag.fail(why);
+      if (r.status === 429 || r.status >= 500) break; // ikinci adresi denemek boşa jeton/zaman
       continue;
     }
     let json = null;

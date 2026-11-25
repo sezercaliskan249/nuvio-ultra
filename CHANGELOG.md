@@ -2,6 +2,10 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-11-25
+### Changed
+- Ultra Archive: clear 🔍 messages when the 111477 add-on service is down ("Account suspended"), rate-limited (429) or returning server errors, instead of a generic "no answer". It no longer retries in those cases.
+
 ## [1.0.0] — 2026-11-24
 First public release.
 

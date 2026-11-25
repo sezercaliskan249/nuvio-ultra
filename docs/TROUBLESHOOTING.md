@@ -7,6 +7,7 @@ Nuvio's **Test** button always uses *The Matrix* (TMDB 603), or *Breaking Bad* S
 |---|---|---|
 | `Cloudflare engeli (403)` | The site's bot protection blocked the request | Try again later or on another network (Wi-Fi ↔ mobile data) |
 | `IP engelli (VPN / datacenter)` | 111477 refuses VPN / datacenter IPs | Turn your VPN off |
+| `111477 sunucusu kapalı (hosting askıya alındı)` | The 111477 add-on service itself is offline | Nothing to fix on your side — it works again when the archive owner restores it |
 | `jeton bitti` | 111477 link tokens for your IP are used up | Wait — about 1 token refills every 5 minutes |
 | `arşivde bu başlık yok` / `film bulunamadı` / `dizi bulunamadı` | The title isn't on that site | Use another plugin |
 | `1. adım (seed) başarısız` | Movy refused the session request | Check the reason after the colon (Cloudflare, timeout…) |
