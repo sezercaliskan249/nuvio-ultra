@@ -17,10 +17,10 @@ Nuvio her eklentinin sonucunu hazır olduğu anda gösterir; hızlılar yavaşla
 ## 🚀 Nuvio'ya ekleme
 
 ```
-https://raw.githubusercontent.com/KULLANICI_ADIN/REPO_ADIN/main/manifest.json
+https://raw.githubusercontent.com/sezercaliskan249/nuvio-ultra/main/manifest.json
 ```
 Nuvio → **Ayarlar → Plugins / Eklentiler → Repository ekle** → yukarıdaki adresi yapıştır
-(`KULLANICI_ADIN` ve `REPO_ADIN` kısmını kendi GitHub bilgilerinle değiştir).
+(`sezercaliskan249` ve `nuvio-ultra` kısmını kendi GitHub bilgilerinle değiştir).
 
 **Test butonu:** her eklentinin Test'i Matrix (dizi eklentilerinde Breaking Bad 1x01) ile dener.
 Bir kaynak çalışmazsa nedeni `🔍 …` satırıyla görünür (Cloudflare engeli, IP engeli, jeton bitti…).
