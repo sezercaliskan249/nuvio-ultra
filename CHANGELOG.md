@@ -2,6 +2,11 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.6] — 2026-11-26
+### Fixed (Android)
+- **Vidlink links did not play on Android.** The Vidlink CDN (`bcdn.hakunaymatata.com`) answers `428` to any User-Agent starting with `Mozilla/`. Nuvio's Android player (ExoPlayer) sends a desktop Chrome User-Agent when the stream has none, while the iOS player (mpv) sends `Lavf/…`. Vidlink streams now carry `User-Agent: Lavf/60.3.100` explicitly (tested: `206 video/mp4`, previously `428`).
+- HLS streams now include `type: "hls"`. ExoPlayer guesses the format from the URL extension, so extension-less playlists (FilmModu `stream.php?v=…`, VidRock) first failed and needed a retry on Android. iOS ignores this field.
+
 ## [1.0.5] — 2026-11-25
 ### Fixed
 - **Ultra FilmModu** moved to the new FilmModu site (filmmodu.live → filmmodu.icu, Pilavyer player). The old filmmodu.one video server (imgsapi.pro) now answers every playlist with a plain "404".

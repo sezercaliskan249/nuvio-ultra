@@ -19,3 +19,12 @@ Nuvio's **Test** button always uses *The Matrix* (TMDB 603), or *Breaking Bad* S
 ## Reporting a problem
 Open an issue using the **Source not working** template and include the plugin name, the title,
 and the exact `🔍` line text.
+
+## Works on iPhone but not on Android
+
+Nuvio uses different video players: **mpv on iOS**, **ExoPlayer on Android** (with mpv as a fallback).
+
+- Some CDNs reject browser User-Agents. ExoPlayer sends a desktop Chrome User-Agent unless the plugin provides one, so the plugin sets a player User-Agent where needed (Vidlink, since v1.0.6).
+- ExoPlayer detects the stream format from the URL. HLS streams are marked with `type: "hls"` so extension-less playlists open directly.
+- Android limits plugin HTTP responses to 1 MB. Very large pages can be cut off on Android only.
+- 4K HEVC / Dolby Vision files and DTS / TrueHD audio depend on the phone's hardware decoders. If a 4K file does not play, switch the player engine to mpv in Nuvio's player settings.

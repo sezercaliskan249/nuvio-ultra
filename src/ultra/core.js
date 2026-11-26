@@ -202,6 +202,10 @@ async function getStreamsFor(active, tag, tmdbId, mediaType, season, episode) {
     };
     if (s.headers) out.headers = s.headers;
     if (s.infoHash) out.infoHash = s.infoHash;
+    // Android (ExoPlayer) akış türünü adresteki uzantıdan tahmin ediyor; "stream.php?v=…" gibi
+    // uzantısız HLS adreslerinde önce hata verip sonra yeniden deniyor (bazen hiç açılmıyor).
+    // Nuvio `type` alanını oynatıcıya iletir: "hls" -> doğrudan HLS olarak açılır. iOS bu alanı yok sayar.
+    if (s.type !== "torrent" && (s.format === "HLS" || /\.m3u8(\?|#|$)/i.test(s.url))) out.type = "hls";
     if (s.subtitles && s.subtitles.length) out.subtitles = s.subtitles;
     return out;
   });

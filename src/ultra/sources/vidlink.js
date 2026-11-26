@@ -73,6 +73,9 @@ async function fetchAndParsePlaylist(playlistUrl) {
   }));
 }
 
+// Tarayıcı olmayan oynatıcı UA'sı (iOS'ta Nuvio/mpv'nin zaten gönderdiği değer)
+const PLAYER_UA = "Lavf/60.3.100";
+
 export async function getVidlinkStreams(tmdbId, mediaType, season, episode) {
   const encrypted = await encryptTmdbId(tmdbId);
   let url;
@@ -106,10 +109,12 @@ export async function getVidlinkStreams(tmdbId, mediaType, season, episode) {
           source: "vidlink",
         };
         if (sizeStr) item.size = sizeStr;
-        // NOT: Bu CDN tarayıcı User-Agent / Referer görünce 428/429 döndürüyor.
-        // Bu yüzden API kendi header'ını vermediyse header EKLEMİYORUZ;
-        // Nuvio oynatıcısının kendi UA'sı (ExoPlayer/VLC) sorunsuz çalışıyor.
-        if (q.headers && Object.keys(q.headers).length > 0) item.headers = q.headers;
+        // NOT: Bu CDN (hakunaymatata) User-Agent "Mozilla/..." ile başlayınca 428/429 döndürüyor.
+        // iPhone'da Nuvio'nun oynatıcısı (mpv) kendi UA'sını ("Lavf/...") gönderdiği için çalışıyor,
+        // Android'de ise oynatıcı UA verilmezse Chrome UA'sı ekliyor -> 428. Bu yüzden mpv'nin UA'sını
+        // açıkça veriyoruz (iki platformda da test edildi: 206 video/mp4).
+        item.headers = q.headers && Object.keys(q.headers).length > 0 ? q.headers : { "User-Agent": PLAYER_UA };
+        item.format = /\.m3u8/i.test(q.url) ? "HLS" : "MP4";
         streams.push(item);
       }
     });
