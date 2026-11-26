@@ -2,6 +2,25 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.7] — 2026-11-26
+### Added
+- **Ultra Vixolity** — Turkish dub + Turkish subtitles for movies **and series**, 1080p HLS, no captcha / Cloudflare, about 1 s per title (direct IMDb lookup).
+  - Most popular titles carry a **Türkçe** audio track next to the original (e.g. Stranger Things, Squid Game, House of the Dragon, The Last of Us, The Matrix, Inception).
+  - Subtitles (Turkish / English) are tracks inside the playlist; a track labelled "Sesotho" (`st`) is Turkish and is announced on the card.
+  - Playlists and segments require the Vixolity headers; they are attached to the stream so Android's player doesn't fall back to its own User-Agent.
+- **Ultra DiziBak** — series with burned-in Turkish subtitles (720p HLS) from dizibak.net, no captcha.
+  - Uses the site's WordPress REST API: every HTML page is ~1.1 MB with the needed data at the very end, while Nuvio on Android cuts plugin responses at 1 MB. API answers are 1–2 KB, which also makes it faster (~2 s).
+- **Ultra Anime** — anime with burned-in Turkish subtitles from DiziWatch / AnizmPlayer, up to 1080p (adaptive 1080p/720p/480p), one card per fansub translation (max 3), no captcha.
+  - Matched by TMDB poster, or name + year. Seasons follow TMDB; long shows listed as a single season (One Piece) use the absolute episode number automatically.
+  - AnizmPlayer playlists need an `Accept` header (otherwise "security error"); it is attached to the stream.
+  - Sibnet is used as a fallback when an episode has no AnizmPlayer copy.
+  - Nuvio's "Test" button (TMDB 603) is answered with Frieren S1E1.
+### Changed
+- Turkish cards: "subtitles burned into the video" is now worded explicitly; sources can describe in-stream subtitle tracks.
+### Not added (tested)
+- DDiziBox / DiziMom: return exactly the same Pilavyer streams as Ultra FilmModu (same video IDs) — no new content.
+- DiziYou, YabanciDizi, DiziPod, dizibak.com, Anizm (anizm.net), AnimeciX, Anizium: Cloudflare challenge. HDFilmCehennemi: HTTP 451. DiziBoxIzle, Sinewix: no streams.
+
 ## [1.0.6] — 2026-11-26
 ### Fixed (Android)
 - **Vidlink links did not play on Android.** The Vidlink CDN (`bcdn.hakunaymatata.com`) answers `428` to any User-Agent starting with `Mozilla/`. Nuvio's Android player (ExoPlayer) sends a desktop Chrome User-Agent when the stream has none, while the iOS player (mpv) sends `Lavf/…`. Vidlink streams now carry `User-Agent: Lavf/60.3.100` explicitly (tested: `206 video/mp4`, previously `428`).

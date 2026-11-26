@@ -2,10 +2,10 @@
 
 # 🎬 Nuvio Ultra
 
-**A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive and Turkish sources — in one repository.**
+**A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive, Turkish sources and anime — in one repository.**
 
-![version](https://img.shields.io/badge/version-1.0.6-blue)
-![plugins](https://img.shields.io/badge/plugins-8-success)
+![version](https://img.shields.io/badge/version-1.0.7-blue)
+![plugins](https://img.shields.io/badge/plugins-11-success)
 ![license](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 </div>
@@ -32,9 +32,12 @@
 | 3 | **Ultra 4K** | 4KHDHub · MoviesDrive | 4K / 1080p — REMUX, Dolby Vision, HDR | MKV |
 | 4 | **Ultra HD** | Vidlink · VidRock | Fast 1080p / 720p | MP4, HLS |
 | 5 | **Ultra Torrent** | Torrentio | 4K / 1080p / 720p torrents with seeders | Magnet |
-| 6 | **Ultra FilmModu** | FilmModu | 🇹🇷 Turkish dubbed & subtitled movies **and series** | HLS |
-| 7 | **Ultra Webteizle** | Webteizle | 🇹🇷 Turkish dubbed & subtitled movies | HLS, MP4 |
-| 8 | **Ultra SezonlukDizi** | SezonlukDizi | 🇹🇷 Turkish subtitled & dubbed series | HLS, MP4 |
+| 6 | **Ultra Vixolity** | Vixolity | 🇹🇷 1080p movies **and series** — Turkish dub audio + Turkish subtitles inside the stream | HLS |
+| 7 | **Ultra FilmModu** | FilmModu | 🇹🇷 Turkish dubbed & subtitled movies **and series** | HLS |
+| 8 | **Ultra DiziBak** | DiziBak | 🇹🇷 Series with burned-in Turkish subtitles (720p) | HLS |
+| 9 | **Ultra Webteizle** | Webteizle | 🇹🇷 Turkish dubbed & subtitled movies | HLS, MP4 |
+| 10 | **Ultra SezonlukDizi** | SezonlukDizi | 🇹🇷 Turkish subtitled & dubbed series | HLS, MP4 |
+| 11 | **Ultra Anime** | DiziWatch · AnizmPlayer | 🎌 Anime with burned-in Turkish subtitles, up to 1080p, several fansub translations | HLS |
 
 Every plugin runs independently, so fast sources appear immediately and never wait for slow ones.
 
@@ -45,7 +48,7 @@ Every plugin runs independently, so fast sources appear immediately and never wa
 - **Required bandwidth** — direct files show the average Mbps needed to stream them smoothly.
 - **Health filtering** — expired, quota-limited and unstable links are dropped or flagged before you see them.
 - **Self-diagnosis** — when a source returns nothing, a `🔍` line tells you why (Cloudflare, IP block, quota, not found…).
-- **Small & fast** — each plugin ships only its own code (13–25 KB, minified).
+- **Small & fast** — each plugin ships only its own code (14–28 KB, minified).
 
 ## 🃏 How a card looks
 
@@ -77,6 +80,12 @@ The archive gives each IP a small pool of link tokens that refills slowly (about
 <summary><b>Torrents don't play</b></summary>
 
 Torrents are delivered as `magnet:` links. If Nuvio's player can't open them, use an external torrent app, or add a debrid-enabled Torrentio addon to Nuvio.
+</details>
+
+<details>
+<summary><b>Where are the Turkish subtitles on Ultra Vixolity?</b></summary>
+
+They are tracks inside the stream: open the player's subtitle menu and pick **Türkçe**. Some titles label the Turkish track as **"Sesotho" (st)** — that one is Turkish too. Turkish dub is an audio track: pick **Türkçe** in the audio menu.
 </details>
 
 <details>

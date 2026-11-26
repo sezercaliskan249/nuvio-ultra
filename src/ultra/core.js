@@ -30,6 +30,9 @@ const TIMEOUTS = {
   FilmModu: 20000,
   Webteizle: 25000,
   SezonlukDizi: 50000, // alternatifler sırayla denenir, kendi 30 sn bütçesi var
+  Vixolity: 15000,
+  DiziBak: 40000, // 6-7 istek sırayla
+  DiziWatch: 45000, // arama + bölüm + en fazla 3 oynatıcı
 };
 
 // Nuvio'nun "Test" butonu her zaman TMDB 603 (Matrix) ile dener. Bu ID gelince
@@ -121,17 +124,23 @@ function rankPrefix(i) {
  * @param {Object<string, Function>} sources  { "Kaynak adı": getXStreams, ... }
  * @param {string} tag  eklentinin görünen adı (loglar için)
  */
-export function makeGetStreams(sources, tag) {
+export function makeGetStreams(sources, tag, opts) {
   const active = Object.keys(sources).map((id) => ({ id, fn: sources[id], timeout: TIMEOUTS[id] || 20000 }));
   return function (tmdbId, mediaType, season, episode) {
-    return getStreamsFor(active, tag || "Ultra", tmdbId, mediaType, season, episode);
+    return getStreamsFor(active, tag || "Ultra", tmdbId, mediaType, season, episode, opts || {});
   };
 }
 
-async function getStreamsFor(active, tag, tmdbId, mediaType, season, episode) {
+async function getStreamsFor(active, tag, tmdbId, mediaType, season, episode, opts) {
   const t0 = Date.now();
   const isTest = String(tmdbId) === TEST_TMDB;
-  if (isTest && (mediaType === "tv" || mediaType === "series")) {
+  if (isTest && opts.testTv) {
+    // Sadece belirli türde içerik veren eklentiler (ör. anime) kendi test dizisini kullanır
+    tmdbId = opts.testTv;
+    mediaType = "tv";
+    season = 1;
+    episode = 1;
+  } else if (isTest && (mediaType === "tv" || mediaType === "series")) {
     tmdbId = TEST_TV_TMDB;
     season = 1;
     episode = 1;

@@ -27,6 +27,9 @@ const PROVIDER_NAMES = {
   sezonlukdizi: "SezonlukDizi",
   "111477": "111477 Archive",
   movy: "Movy",
+  vixolity: "Vixolity",
+  dizibak: "DiziBak",
+  diziwatch: "DiziWatch",
 };
 
 // Torrent sitelerinin düzgün yazımları
@@ -189,10 +192,15 @@ function formatTr(s) {
   l1.push(s.format === "MP4" ? "🎯 MP4" : "📺 HLS");
   if (s.host && s.host !== provider) l1.push(`Sunucu ${s.host}`);
   lines.push(l1.join(SEP));
-  if (both) lines.push(`🔊 ${s.audioNote || "Türkçe ses"}${SEP}💬 TR altyazı (oynatıcıdan seç)`);
+  if (s.subNote) {
+    // Kaynak kendi altyazı açıklamasını verdiyse (ör. Vixolity: liste içi altyazı)
+    if (dub) lines.push(s.audioNote ? `🔊 ${s.audioNote}` : "🔊 Türkçe ses");
+    lines.push(s.subNote);
+  } else if (both) lines.push(`🔊 ${s.audioNote || "Türkçe ses"}${SEP}💬 TR altyazı (oynatıcıdan seç)`);
   else if (dub) lines.push(s.audioNote ? `🔊 ${s.audioNote}` : "🔊 Türkçe ses");
   else if (s.subtitles && s.subtitles.length) lines.push("💬 Türkçe altyazı dosyası otomatik eklenir");
-  else lines.push("💬 Altyazı videoya gömülü");
+  else lines.push("💬 Türkçe altyazı videoya gömülü (her oynatıcıda görünür)");
+  if (s.note) lines.push(s.note);
   return { name, title: lines.join("\n") };
 }
 

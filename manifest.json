@@ -1,12 +1,12 @@
 {
   "name": "Nuvio Ultra",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "scrapers": [
     {
       "id": "ultra-archive",
       "name": "Ultra Archive",
       "description": "📦 111477 open archive (1.4 PB): movies & series, mostly 4K / REMUX MKV. Works without VPN (limited requests per IP).",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -30,7 +30,7 @@
       "id": "ultra-movy",
       "name": "Ultra Movy",
       "description": "📺 Movy (movy.sx): HLS up to 4K. One card per quality, resolution verified from the playlist.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -54,7 +54,7 @@
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "💎 4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). Best quality, arrives a few seconds later.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -80,7 +80,7 @@
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "⚡ Vidlink + VidRock: fast 1080p / 720p MP4 and HLS links.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -106,7 +106,7 @@
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
       "description": "🧲 Torrentio: 4K / 1080p / 720p torrents from 25+ sites, with seeders. Instant.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -129,10 +129,33 @@
       "supportsExternalPlayer": true
     },
     {
+      "id": "ultra-vixolity",
+      "name": "Ultra Vixolity",
+      "description": "🇹🇷 Vixolity: 1080p movies & TV series with Turkish dub audio (most popular titles) and Turkish subtitles inside the stream. No captcha, ~1 s.",
+      "version": "1.0.7",
+      "author": "sezercaliskan249",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/trvixolity.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
       "description": "🇹🇷 FilmModu: Turkish dubbed & subtitled movies and TV series (HLS). Turkish audio + subtitles.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -153,10 +176,32 @@
       "supportsExternalPlayer": true
     },
     {
+      "id": "ultra-dizibak",
+      "name": "Ultra DiziBak",
+      "description": "🇹🇷 DiziBak: TV series with burned-in Turkish subtitles (720p HLS). No captcha.",
+      "version": "1.0.7",
+      "author": "sezercaliskan249",
+      "supportedTypes": [
+        "tv"
+      ],
+      "filename": "providers/trdizibak.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
       "description": "🇹🇷 Webteizle: Turkish dubbed & subtitled movies.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
@@ -179,12 +224,35 @@
       "id": "ultra-sezonlukdizi",
       "name": "Ultra SezonlukDizi",
       "description": "🇹🇷 SezonlukDizi: Turkish subtitled & dubbed TV series.",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "tv"
       ],
       "filename": "providers/trsezonluk.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "tr"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
+      "id": "ultra-anime",
+      "name": "Ultra Anime",
+      "description": "🎌 Anime with burned-in Turkish subtitles (DiziWatch · AnizmPlayer, up to 1080p HLS, multiple fansub translations). No captcha.",
+      "version": "1.0.7",
+      "author": "sezercaliskan249",
+      "supportedTypes": [
+        "tv"
+      ],
+      "filename": "providers/tranime.js",
       "enabled": true,
       "logo": "",
       "contentLanguage": [
