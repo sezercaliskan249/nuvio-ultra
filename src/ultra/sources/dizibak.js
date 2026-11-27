@@ -15,7 +15,7 @@
  * Video *.d1iz-b0ok.xyz üzerinde; Referer player.dizibak.net ister.
  */
 
-import { trInfo, req, reqJson, norm, absUrl, whyFailed, qualityFromText, decodeHtml } from "../tr/common.js";
+import { trInfo, req, reqJson, norm, absUrl, whyFailed, qualityFromText, decodeHtml, slugify } from "../tr/common.js";
 import { unpack } from "../tr/extractors.js";
 
 const BASE = "https://dizibak.net";
@@ -44,9 +44,9 @@ async function findShow(info, diag) {
   return null;
 }
 
-async function findEpisode(show, s, e) {
+async function findEpisode(show, s, e, triedSlug) {
   const F = "&_fields=id,title,link,content";
-  const { json } = await reqJson(`${API}/posts?slug=${encodeURIComponent(`${show.slug}-${s}-sezon-${e}-bolum`)}${F}`, { headers: JH, timeout: 9000 });
+  const { json } = show.slug === triedSlug ? { json: null } : await reqJson(`${API}/posts?slug=${encodeURIComponent(`${show.slug}-${s}-sezon-${e}-bolum`)}${F}`, { headers: JH, timeout: 9000 });
   if (Array.isArray(json) && json[0]) return json[0];
   // Yedek: "final" vb. farklı adresler -> dizinin kategorisinde ara, başlıktan doğrula
   const { json: j2 } = await reqJson(`${API}/posts?categories=${show.id}&per_page=20&search=${encodeURIComponent(`${s}. Sezon ${e}. Bölüm`)}${F}`, { headers: JH, timeout: 9000 });
@@ -54,15 +54,31 @@ async function findEpisode(show, s, e) {
   return (Array.isArray(j2) && j2.find((p) => p && p.title && re.test(decodeHtml(p.title.rendered || "")))) || null;
 }
 
-/** İlk parçanın 301 hedef sunucusu aynı listeyi veriyorsa, liste URL'sini oraya taşır. */
-async function directStorage(listUrl, text, headers) {
+/** Arama yapmadan bölüm yazısını slug tahminiyle bulur; başlıktan dizi adını doğrular. */
+async function guessEpisode(info, s, e) {
+  const names = [info.titleEn, info.titleOrig].filter((t, i, a) => t && /[a-z]/i.test(t) && a.indexOf(t) === i);
+  const name = names[0];
+  const slug = name && slugify(name);
+  if (!slug) return null;
+  const { json } = await reqJson(`${API}/posts?slug=${encodeURIComponent(`${slug}-${s}-sezon-${e}-bolum`)}&_fields=id,title,link,content`, { headers: JH, timeout: 9000 });
+  const p = Array.isArray(json) && json[0];
+  if (!p) return null;
+  const t = norm(decodeHtml((p.title && p.title.rendered) || ""));
+  return names.some((n) => t.indexOf(norm(n)) !== -1) ? p : null;
+}
+
+/**
+ * Bu CDN HER parçayı (8-12 sn) 301 ile başka bir depolama sunucusuna yönlendiriyor (+1 bağlantı/parça).
+ * İlk parçanın yönlendirme hedefini 1 istekle öğrenip listeyi doğrudan oradan veririz
+ * (depolama sunucusu aynı yoldaki gomindex.m3u8'i de veriyor — test edildi).
+ * Android: redirect "manual" -> 301 + Location. iPhone: yönlendirme izlenir -> son URL (r.url).
+ */
+async function directStorage(listUrl, headers) {
   try {
-    const first = String(text || "").split("\n").map((l) => l.trim()).find((l) => l && l[0] !== "#");
-    if (!first || /#EXT-X-STREAM-INF/.test(text)) return listUrl;
-    const segUrl = /^https?:\/\//i.test(first) ? first : listUrl.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + first;
+    const segUrl = listUrl.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + "gomplayer-1.jpeg";
     const r = await withTimeoutP(
       fetch(segUrl, { method: "GET", redirect: "manual", headers: Object.assign({ Range: "bytes=0-0" }, headers) }),
-      4000
+      5000
     );
     if (!r) return listUrl;
     const loc = (r.headers && r.headers.get && r.headers.get("location")) || (r.url && r.url !== segUrl ? r.url : "");
@@ -70,9 +86,7 @@ async function directStorage(listUrl, text, headers) {
     const pathOf = (x) => String(x).replace(/^https?:\/\/[^/?#]+/i, "").replace(/[?#].*$/, "");
     const toHost = hostOf(loc);
     if (!toHost || toHost === hostOf(segUrl) || pathOf(loc) !== pathOf(segUrl)) return listUrl;
-    const moved = toHost + listUrl.replace(/^https?:\/\/[^/?#]+/i, "");
-    const chk = await req(moved, { headers, timeout: 4000 });
-    return chk.ok && /#EXTM3U/.test(chk.text) ? moved : listUrl;
+    return toHost + listUrl.replace(/^https?:\/\/[^/?#]+/i, "");
   } catch (e) {
     return listUrl;
   }
@@ -88,13 +102,18 @@ export async function getDiziBakStreams(tmdbId, mediaType, season, episode, diag
   const s = parseInt(season, 10) || 1;
   const e = parseInt(episode, 10) || 1;
 
-  const show = await findShow(info, diag);
-  if (!show || !show.slug) return [];
-  diag && diag.step(`dizi ✓ ${show.title}`);
-
-  const post = await findEpisode(show, s, e);
+  // HIZ (v1.0.10): Nuvio eklenti isteklerini telefonda TEK TEK yapıyor (her istek 1-3 sn).
+  // Önce bölüm adresini doğrudan tahmin et (dizi-adi-S-sezon-E-bolum): tutarsa arama adımı atlanır.
+  let post = await guessEpisode(info, s, e);
+  if (post) diag && diag.step(`bölüm ✓ (doğrudan)`);
+  else {
+    const show = await findShow(info, diag);
+    if (!show || !show.slug) return [];
+    diag && diag.step(`dizi ✓ ${show.title}`);
+    post = await findEpisode(show, s, e, slugify(info.titleEn || info.titleOrig || ""));
+  }
   if (!post) {
-    diag && diag.fail(`dizi ✓ ama S${s}E${e} yok`);
+    diag && diag.fail(`S${s}E${e} sitede yok`);
     return [];
   }
   const html = String((post.content && post.content.rendered) || "");
@@ -124,21 +143,10 @@ export async function getDiziBakStreams(tmdbId, mediaType, season, episode, diag
   const headers = { "User-Agent": UA, Referer: PLAYER + "/", Origin: PLAYER, Accept: "*/*" };
   const out = [];
   for (let u of files.slice(0, 2)) {
-    // Kalite: master listesindeki en yüksek çözünürlük (aynı zamanda oynatılabilirlik kontrolü)
-    let quality = qualityFromText(u, "720p");
-    if (/\.m3u8/i.test(u)) {
-      const mr = await req(u, { headers, timeout: 8000 });
-      if (!mr.ok || !/#EXTM3U/.test(mr.text)) {
-        diag && diag.fail(`video listesi açılmadı (${mr.status})`);
-        continue;
-      }
-      const hs = (mr.text.match(/RESOLUTION=\d+x(\d+)/g) || []).map((x) => parseInt(x.split("x")[1], 10));
-      if (hs.length) quality = qualityFromText(Math.max.apply(null, hs) + "p", quality);
-      // HIZ: bu sunucu HER parçayı (8-12 sn'lik) 301 ile başka bir depolama sunucusuna yönlendiriyor
-      // (+0.4 sn/parça, açılış ve sarma yavaşlıyor). Listeyi doğrudan depolama sunucusundan verirsek
-      // parçalar yönlendirmesiz gelir.
-      u = await directStorage(u, mr.text, headers);
-    }
+    // Kalite dosya adında (".../<id>-720.mp4/gomindex.m3u8"); liste ayrıca indirilmez (1 istek kazanç)
+    const qm = u.match(/-(\d{3,4})p?\.mp4\//i); // dosya adındaki hash rakamlarına takılmasın
+    const quality = qm ? qualityFromText(qm[1] + "p", "720p") : "720p";
+    if (/\/gomindex\.m3u8($|\?)/i.test(u)) u = await directStorage(u, headers);
     out.push({
       url: u,
       quality,

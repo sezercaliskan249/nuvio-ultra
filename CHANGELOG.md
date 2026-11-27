@@ -2,6 +2,14 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.10] — 2026-11-24
+### Improved
+- **Faster stream lists for Ultra DiziBak and Ultra Anime.** On phones Nuvio runs plugin requests one after another, and only a few plugins at a time (later plugins wait for a free slot), so every request counts.
+  - DiziBak: 7 → **4 requests**. The episode address is guessed directly (`<show>-S-sezon-E-bolum`) and the category search is used only as a fallback. Quality is read from the file name instead of downloading the playlist. The storage-host lookup no longer needs a verification request.
+  - Anime: returns **immediately (1 request)** for titles that are not tagged *Animation* on TMDB (it used to run up to 4 site searches). At most 2 searches and 2 fansub translations (each translation costs 2 requests).
+- **Ultra Anime starts faster on iPhone.** AnizmPlayer masters list 4 qualities plus a separate audio track; mpv opens and probes all of them before the first frame (~16 connections). On iPhone the card now uses an mpv EDL link that opens only the best quality + audio (~6 connections). In a simulation with 2 s per connection: 27–31 s → 19 s. Android (ExoPlayer, which already opens only one quality) keeps the normal link. The platform is detected from Nuvio's fetch (iOS Ktor/Darwin always reports `statusText: "OK"`, Android OkHttp reports an empty one over HTTP/2).
+  - A fallback card with the normal link is added on iPhone in case the fast link doesn't open.
+
 ## [1.0.9] — 2026-11-24
 ### Fixed
 - **Ultra Anime: videos never started** (stuck on "starting"). AnizmPlayer serves its HLS master as `master.txt`; the iPhone player (mpv / FFmpeg) refuses to treat a `.txt` URL as HLS ("Not detecting m3u8/hls with non standard extension"), and the old `#.m3u8` suffix didn't help because the fragment is ignored. The plugin now hands out `master.txt.m3u8`, which the server answers with the proper `application/x-mpegURL` type — tested in mpv: picture after ~2 s, 1080p.

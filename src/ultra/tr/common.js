@@ -133,7 +133,7 @@ export async function req(url, opts = {}) {
     const p = fetch(url, init).then(async (r) => {
       const text = await r.text();
       const get = (n) => (r.headers && r.headers.get ? r.headers.get(n) : null);
-      return { ok: r.ok, status: r.status, url: r.url || url, text: text || "", cookie: cookieFrom(get("set-cookie")) };
+      return { ok: r.ok, status: r.status, statusText: r.statusText == null ? "" : String(r.statusText), url: r.url || url, text: text || "", cookie: cookieFrom(get("set-cookie")), location: get("location") || "" };
     });
     const res = await withTimeout(p, opts.timeout || 9000, null);
     return res || { ok: false, status: 0, url, text: "", timeout: true, cookie: "" };
