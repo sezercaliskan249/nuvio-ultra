@@ -1,12 +1,12 @@
 {
   "name": "Nuvio Ultra",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "scrapers": [
     {
       "id": "ultra-archive",
       "name": "Ultra Archive",
       "description": "📦 111477 open archive (1.4 PB): movies & series, mostly 4K / REMUX MKV. Works without VPN (limited requests per IP).",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -30,7 +30,7 @@
       "id": "ultra-vixolity",
       "name": "Ultra Vixolity",
       "description": "🇹🇷 Vixolity: 1080p movies & TV series with Turkish dub audio (most popular titles) and Turkish subtitles inside the stream. No captcha, ~1 s.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -53,7 +53,7 @@
       "id": "ultra-movy",
       "name": "Ultra Movy",
       "description": "📺 Movy (movy.sx): HLS up to 4K. One card per quality, resolution verified from the playlist.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -77,7 +77,7 @@
       "id": "ultra-4k",
       "name": "Ultra 4K",
       "description": "💎 4KHDHub + MoviesDrive: 4K / 1080p / 720p MKV (REMUX, Dolby Vision, HDR). Best quality, arrives a few seconds later.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -100,10 +100,33 @@
       "supportsExternalPlayer": true
     },
     {
+      "id": "ultra-4kplus",
+      "name": "Ultra 4K+",
+      "description": "🌈 Cinejoy (4K HDR10 HEVC) + CNO (4K H.264) + VidBolt (1080p, multi-audio) HLS streams. Fast: 1 request for CNO / VidBolt.",
+      "version": "1.0.11",
+      "author": "sezercaliskan249",
+      "supportedTypes": [
+        "movie",
+        "tv"
+      ],
+      "filename": "providers/ultra4kplus.js",
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": [
+        "en"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": true
+    },
+    {
       "id": "ultra-hd",
       "name": "Ultra HD",
       "description": "⚡ Vidlink + VidRock: fast 1080p / 720p MP4 and HLS links.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -129,7 +152,7 @@
       "id": "ultra-torrent",
       "name": "Ultra Torrent",
       "description": "🧲 Torrentio: 4K / 1080p / 720p torrents from 25+ sites, with seeders. Instant.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -155,7 +178,7 @@
       "id": "ultra-filmmodu",
       "name": "Ultra FilmModu",
       "description": "🇹🇷 FilmModu: Turkish dubbed & subtitled movies and TV series (HLS). Turkish audio + subtitles.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie",
@@ -179,7 +202,7 @@
       "id": "ultra-dizibak",
       "name": "Ultra DiziBak",
       "description": "🇹🇷 DiziBak: TV series with burned-in Turkish subtitles (720p HLS). No captcha.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "tv"
@@ -201,7 +224,7 @@
       "id": "ultra-webteizle",
       "name": "Ultra Webteizle",
       "description": "🇹🇷 Webteizle: Turkish dubbed & subtitled movies.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "movie"
@@ -224,7 +247,7 @@
       "id": "ultra-anime",
       "name": "Ultra Anime",
       "description": "🎌 Anime with burned-in Turkish subtitles (DiziWatch · AnizmPlayer, up to 1080p HLS, multiple fansub translations). No captcha.",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "author": "sezercaliskan249",
       "supportedTypes": [
         "tv"

@@ -62,3 +62,15 @@ export function utf8Decode(bytes, start) {
   }
   return s;
 }
+
+/** byte dizisi (Uint8Array / Array) -> base64url (padding'siz) */
+export function bytesToB64url(bytes) {
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 3) {
+    const n = (bytes[i] << 16) | ((bytes[i + 1] || 0) << 8) | (bytes[i + 2] || 0);
+    out += ABC[(n >> 18) & 63] + ABC[(n >> 12) & 63];
+    if (i + 1 < bytes.length) out += ABC[(n >> 6) & 63];
+    if (i + 2 < bytes.length) out += ABC[n & 63];
+  }
+  return out.replace(/\+/g, "-").replace(/\//g, "_");
+}

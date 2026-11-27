@@ -33,6 +33,9 @@ const TIMEOUTS = {
   Vixolity: 15000,
   DiziBak: 40000, // 6-7 istek sırayla
   DiziWatch: 45000, // arama + bölüm + en fazla 3 oynatıcı
+  Cinejoy: 30000, // sunucu başına 3 istek (enc-dec.app) + liste; Light boşsa Nebula
+  CNO: 10000, // tek istek
+  VidBolt: 15000, // tek istek
 };
 
 // Nuvio'nun "Test" butonu her zaman TMDB 603 (Matrix) ile dener. Bu ID gelince
@@ -50,6 +53,10 @@ const ALLOWED_TORRENT_QUALITIES = ["4K", "1440p", "1080p", "720p"];
 function directScore(s) {
   if (s.source === "111477") return 48 - (s.mbps > 45 ? 30 : 0);
   if (s.source === "movy") return 36;
+  // Ultra 4K+: aynı kalitede Cinejoy (HDR) > CNO > VidBolt
+  if (s.source === "cinejoy") return 46;
+  if (s.source === "cno") return 44;
+  if (s.source === "vidbolt") return 40;
   if (s.kind) {
     // Kararsız (kotası dolmuş hesaba düşen) linkler en alta: film ortasında donar
     if (s.flaky) return 5;

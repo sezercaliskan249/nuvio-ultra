@@ -2,6 +2,16 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.11] — 2026-11-27
+### Added
+- **Ultra 4K+** — a new plugin with three HLS sources ported from VyseTV's open-source scrapers (the top of its source list after Movy). Tested live on 8 movies / series:
+  - **Cinejoy** (Light server): **4K HDR10**, HEVC 10-bit, ~16–20 Mbps, + 1080p / 720p in the same stream; 4K on 7 of 8 titles (Breaking Bad: 1080p). Nebula (1080p) is asked only if Light has nothing. 3 requests via the enc-dec.app helper (~1.5 s). Uses Nuvio's binary fetch (`Uint8Array` body + `arrayBuffer()`); on older Nuvio versions the source is skipped with a 🔍 note.
+  - **CNO** (server 21): **4K** H.264 (~16 Mbps) + 1080p (~6 Mbps) as separate cards, **one request (~0.2 s)**. The other 49 CNO servers returned nothing in tests, so only 21 is asked. Its Cloudflare blocks browser User-Agents coming from non-browser clients (and curl / Lavf / okhttp), so the API and the player use a VLC User-Agent.
+  - **VidBolt**: 1080p fallback behind a **quality gate** — its mirror changes per request (Orion 1080p with English audio is good; Luna 720p with Italian default audio and MovieBox links that answer 403 are dropped). Cards appear only for verified ≥1080p streams with English / Turkish audio. On iPhone, masters with more than 6 audio + subtitle tracks are skipped, because mpv downloads every track list before the first frame.
+- Cards show the verified resolution, codec / HDR, audio languages and the required bandwidth read from the playlist.
+### Checked and not added
+- VidUp / VidCore (API changed, 404), CineBros (captcha), 3EyedRaven (Cloudflare challenge), RiveStream (secret key changed + rate limit).
+
 ## [1.0.10] — 2026-11-24
 ### Improved
 - **Faster stream lists for Ultra DiziBak and Ultra Anime.** On phones Nuvio runs plugin requests one after another, and only a few plugins at a time (later plugins wait for a free slot), so every request counts.

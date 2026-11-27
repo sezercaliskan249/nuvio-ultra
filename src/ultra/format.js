@@ -30,6 +30,9 @@ const PROVIDER_NAMES = {
   vixolity: "Vixolity",
   dizibak: "DiziBak",
   diziwatch: "DiziWatch",
+  cinejoy: "Cinejoy",
+  cno: "CNO",
+  vidbolt: "VidBolt",
 };
 
 // Torrent sitelerinin düzgün yazımları
@@ -77,6 +80,8 @@ function linkTypeLabel(s) {
   if (s.source === "movy") return `${s.format === "DASH" ? "📺 DASH" : s.format === "MP4" ? "🎯 MP4" : "📺 HLS"}  ·  Sunucu ${s.server || "?"}`;
   if (s.source === "vidlink") return "🎯 MP4  ·  Sarılabilir";
   if (s.source === "vidrock") return `📺 HLS  ·  Sunucu ${s.server || "?"}`;
+  if (s.source === "cinejoy" || s.source === "cno" || s.source === "vidbolt")
+    return `${s.format === "MP4" ? "🎯 MP4" : "📺 HLS"}  ·  ${s.server ? "Sunucu " + s.server : "Sarılabilir"}`;
   return "🔗 Direkt";
 }
 
