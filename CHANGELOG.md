@@ -2,6 +2,15 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.9] — 2026-11-24
+### Fixed
+- **Ultra Anime: videos never started** (stuck on "starting"). AnizmPlayer serves its HLS master as `master.txt`; the iPhone player (mpv / FFmpeg) refuses to treat a `.txt` URL as HLS ("Not detecting m3u8/hls with non standard extension"), and the old `#.m3u8` suffix didn't help because the fragment is ignored. The plugin now hands out `master.txt.m3u8`, which the server answers with the proper `application/x-mpegURL` type — tested in mpv: picture after ~2 s, 1080p.
+### Improved
+- **Ultra DiziBak: faster start and seeking.** The CDN redirected **every** 8–12 s segment with a 301 to a storage host (+~0.4 s per segment). The plugin now detects that host once and gives the player the playlist directly from it, so segments load without a redirect.
+- **Ultra Anime:** multiple fansub translations are resolved in parallel.
+### Checked (no change needed)
+- **Vidlink qualities** were verified with ffprobe on 6 titles: the 4 cards are different files with different resolutions (e.g. Breaking Bad S1E1: 1920×1080 / 1280×720 / 850×480 / 640×360). Older 4:3 anime such as Naruto Shippuden are low-resolution at the source, so "1080p" (1392×1080) and "720p" (1280×994) look almost identical. The labels come from Vidlink and are occasionally off by one step.
+
 ## [1.0.8] — 2026-11-26
 ### Changed
 - **Ultra Vixolity moved up** to the 2nd place (right after Ultra Archive, above Ultra Movy).

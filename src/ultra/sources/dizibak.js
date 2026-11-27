@@ -54,6 +54,34 @@ async function findEpisode(show, s, e) {
   return (Array.isArray(j2) && j2.find((p) => p && p.title && re.test(decodeHtml(p.title.rendered || "")))) || null;
 }
 
+/** İlk parçanın 301 hedef sunucusu aynı listeyi veriyorsa, liste URL'sini oraya taşır. */
+async function directStorage(listUrl, text, headers) {
+  try {
+    const first = String(text || "").split("\n").map((l) => l.trim()).find((l) => l && l[0] !== "#");
+    if (!first || /#EXT-X-STREAM-INF/.test(text)) return listUrl;
+    const segUrl = /^https?:\/\//i.test(first) ? first : listUrl.replace(/[?#].*$/, "").replace(/[^/]*$/, "") + first;
+    const r = await withTimeoutP(
+      fetch(segUrl, { method: "GET", redirect: "manual", headers: Object.assign({ Range: "bytes=0-0" }, headers) }),
+      4000
+    );
+    if (!r) return listUrl;
+    const loc = (r.headers && r.headers.get && r.headers.get("location")) || (r.url && r.url !== segUrl ? r.url : "");
+    const hostOf = (x) => (String(x).match(/^(https?:\/\/[^/?#]+)/i) || [])[1] || "";
+    const pathOf = (x) => String(x).replace(/^https?:\/\/[^/?#]+/i, "").replace(/[?#].*$/, "");
+    const toHost = hostOf(loc);
+    if (!toHost || toHost === hostOf(segUrl) || pathOf(loc) !== pathOf(segUrl)) return listUrl;
+    const moved = toHost + listUrl.replace(/^https?:\/\/[^/?#]+/i, "");
+    const chk = await req(moved, { headers, timeout: 4000 });
+    return chk.ok && /#EXTM3U/.test(chk.text) ? moved : listUrl;
+  } catch (e) {
+    return listUrl;
+  }
+}
+
+function withTimeoutP(p, ms) {
+  return Promise.race([p.catch(() => null), new Promise((res) => setTimeout(() => res(null), ms))]);
+}
+
 export async function getDiziBakStreams(tmdbId, mediaType, season, episode, diag) {
   const info = await trInfo(tmdbId, mediaType);
   if (!info.isTv) return [];
@@ -95,7 +123,7 @@ export async function getDiziBakStreams(tmdbId, mediaType, season, episode, diag
 
   const headers = { "User-Agent": UA, Referer: PLAYER + "/", Origin: PLAYER, Accept: "*/*" };
   const out = [];
-  for (const u of files.slice(0, 2)) {
+  for (let u of files.slice(0, 2)) {
     // Kalite: master listesindeki en yüksek çözünürlük (aynı zamanda oynatılabilirlik kontrolü)
     let quality = qualityFromText(u, "720p");
     if (/\.m3u8/i.test(u)) {
@@ -106,6 +134,10 @@ export async function getDiziBakStreams(tmdbId, mediaType, season, episode, diag
       }
       const hs = (mr.text.match(/RESOLUTION=\d+x(\d+)/g) || []).map((x) => parseInt(x.split("x")[1], 10));
       if (hs.length) quality = qualityFromText(Math.max.apply(null, hs) + "p", quality);
+      // HIZ: bu sunucu HER parçayı (8-12 sn'lik) 301 ile başka bir depolama sunucusuna yönlendiriyor
+      // (+0.4 sn/parça, açılış ve sarma yavaşlıyor). Listeyi doğrudan depolama sunucusundan verirsek
+      // parçalar yönlendirmesiz gelir.
+      u = await directStorage(u, mr.text, headers);
     }
     out.push({
       url: u,

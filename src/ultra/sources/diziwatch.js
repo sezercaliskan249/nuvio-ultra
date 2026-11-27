@@ -13,7 +13,7 @@
  *      One Piece gibi tek sezonda listelenen uzun serilerde: TMDB sezonlarından
  *      mutlak bölüm numarası hesaplanır -> /sezon-1/bolum-<mutlak>
  *   4. Sayfadaki anizmplayer.com/video/<hash>  ->  POST /player/index.php?data=<hash>&do=getVideo
- *      -> { videoSource: ".../master.txt" }  (HLS master, uzantısı .txt)
+ *      -> { videoSource: ".../master.txt" }  (HLS master; oynatıcıya ".../master.txt.m3u8" verilir)
  *   Yedek: Sibnet (MP4) — AnizmPlayer yoksa.
  */
 
@@ -91,6 +91,18 @@ async function anizmPlayer(hash) {
   return /^\//.test(src) ? PLAYER + src : src;
 }
 
+/**
+ * ÖNEMLİ (v1.0.9): ".../master.txt" adresini iPhone'daki oynatıcı (mpv/ffmpeg) HLS olarak TANIMIYOR
+ * ("Not detecting m3u8/hls with non standard extension") ve "başlatılıyor"da kalıyordu; "#.m3u8"
+ * eki işe yaramıyor (sunucuya gitmeyen kısım sayılmıyor). Sunucu aynı listeyi ".../master.txt.m3u8"
+ * adresinden "application/x-mpegURL" türüyle de veriyor -> mpv ve ExoPlayer ikisi de oynatıyor (test edildi).
+ */
+function playableMaster(src) {
+  const clean = String(src).replace(/#.*$/, "");
+  if (/\.m3u8($|\?)/i.test(clean)) return clean;
+  return clean.replace(/(\.txt)($|\?)/i, "$1.m3u8$2");
+}
+
 export async function getDiziWatchStreams(tmdbId, mediaType, season, episode, diag) {
   if (!(mediaType === "tv" || mediaType === "series")) {
     diag && diag.fail("sadece anime dizileri (film yok)");
@@ -132,19 +144,26 @@ export async function getDiziWatchStreams(tmdbId, mediaType, season, episode, di
   const out = [];
   // Accept başlığı ŞART: yoksa AnizmPlayer liste yerine "security error" döndürüyor
   const headers = { "User-Agent": UA, Referer: PLAYER + "/", Origin: PLAYER, Accept: "*/*" };
+  // Tüm çeviriler aynı anda çözülür (sırayla ~1 sn/çeviri yerine)
+  const masters = await Promise.all(
+    hashes.slice(0, MAX_PLAYERS).map(async (h) => {
+      const m0 = await anizmPlayer(h);
+      if (!m0) return null;
+      const master = playableMaster(m0);
+      const mr = await req(master, { headers, timeout: 8000 });
+      if (!mr.ok || !/#EXTM3U/.test(mr.text)) return null;
+      return { master, text: mr.text };
+    })
+  );
   let n = 0;
-  for (const h of hashes.slice(0, MAX_PLAYERS)) {
-    const master = await anizmPlayer(h);
-    if (!master) continue;
-    // Kalite + oynatılabilirlik: master listesindeki en yüksek çözünürlük
-    const mr = await req(master, { headers, timeout: 8000 });
-    if (!mr.ok || !/#EXTM3U/.test(mr.text)) continue;
-    const hs = (mr.text.match(/RESOLUTION=\d+x(\d+)/g) || []).map((x) => parseInt(x.split("x")[1], 10));
+  for (const it of masters) {
+    if (!it) continue;
+    // Kalite: master listesindeki en yüksek çözünürlük
+    const hs = (it.text.match(/RESOLUTION=\d+x(\d+)/g) || []).map((x) => parseInt(x.split("x")[1], 10));
     const max = hs.length ? Math.max.apply(null, hs) : 0;
     n++;
     out.push({
-      // .txt uzantılı HLS: oynatıcı türü tanısın diye #.m3u8 eklenir (sunucuya gitmez)
-      url: master + (/\.m3u8/i.test(master) ? "" : "#.m3u8"),
+      url: it.master,
       quality: max >= 1000 ? "1080p" : max >= 700 ? "720p" : max ? "480p" : "1080p",
       type: "direct",
       source: "diziwatch",
