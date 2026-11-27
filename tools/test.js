@@ -4,7 +4,7 @@
  *   node tools/test.js            # movie 603 (The Matrix) + tv 1396 S1E1 (Breaking Bad)
  *   node tools/test.js 27205 movie
  * Some sources block datacenter IPs (111477, Movy) or sit behind Cloudflare
- * (Webteizle, SezonlukDizi); those show their 🔍 reason instead of links.
+ * (Webteizle); those show their 🔍 reason instead of links.
  */
 const fs = require("fs");
 const path = require("path");

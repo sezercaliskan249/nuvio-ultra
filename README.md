@@ -4,8 +4,8 @@
 
 **A plugin pack for [Nuvio](https://github.com/tapframe): 4K direct links, torrents, a 1.4 PB archive, Turkish sources and anime — in one repository.**
 
-![version](https://img.shields.io/badge/version-1.0.7-blue)
-![plugins](https://img.shields.io/badge/plugins-11-success)
+![version](https://img.shields.io/badge/version-1.0.8-blue)
+![plugins](https://img.shields.io/badge/plugins-10-success)
 ![license](https://img.shields.io/badge/license-GPL--3.0-lightgrey)
 
 </div>
@@ -28,16 +28,15 @@
 | # | Plugin | Source | Content | Formats |
 |:-:|---|---|---|---|
 | 1 | **Ultra Archive** | 111477 open archive | Movies & series, mostly 4K / REMUX | MKV, MP4 |
-| 2 | **Ultra Movy** | Movy (movy.sx) | HLS up to 4K, one card per quality | HLS |
-| 3 | **Ultra 4K** | 4KHDHub · MoviesDrive | 4K / 1080p — REMUX, Dolby Vision, HDR | MKV |
-| 4 | **Ultra HD** | Vidlink · VidRock | Fast 1080p / 720p | MP4, HLS |
-| 5 | **Ultra Torrent** | Torrentio | 4K / 1080p / 720p torrents with seeders | Magnet |
-| 6 | **Ultra Vixolity** | Vixolity | 🇹🇷 1080p movies **and series** — Turkish dub audio + Turkish subtitles inside the stream | HLS |
+| 2 | **Ultra Vixolity** | Vixolity | 🇹🇷 1080p movies **and series** — Turkish dub audio + Turkish subtitles inside the stream | HLS |
+| 3 | **Ultra Movy** | Movy (movy.sx) | HLS up to 4K, one card per quality | HLS |
+| 4 | **Ultra 4K** | 4KHDHub · MoviesDrive | 4K / 1080p — REMUX, Dolby Vision, HDR | MKV |
+| 5 | **Ultra HD** | Vidlink · VidRock | Fast 1080p / 720p | MP4, HLS |
+| 6 | **Ultra Torrent** | Torrentio | 4K / 1080p / 720p torrents with seeders | Magnet |
 | 7 | **Ultra FilmModu** | FilmModu | 🇹🇷 Turkish dubbed & subtitled movies **and series** | HLS |
 | 8 | **Ultra DiziBak** | DiziBak | 🇹🇷 Series with burned-in Turkish subtitles (720p) | HLS |
 | 9 | **Ultra Webteizle** | Webteizle | 🇹🇷 Turkish dubbed & subtitled movies | HLS, MP4 |
-| 10 | **Ultra SezonlukDizi** | SezonlukDizi | 🇹🇷 Turkish subtitled & dubbed series | HLS, MP4 |
-| 11 | **Ultra Anime** | DiziWatch · AnizmPlayer | 🎌 Anime with burned-in Turkish subtitles, up to 1080p, several fansub translations | HLS |
+| 10 | **Ultra Anime** | DiziWatch · AnizmPlayer | 🎌 Anime with burned-in Turkish subtitles, up to 1080p, several fansub translations | HLS |
 
 Every plugin runs independently, so fast sources appear immediately and never wait for slow ones.
 

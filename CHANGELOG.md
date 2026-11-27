@@ -2,6 +2,12 @@
 
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.8] — 2026-11-26
+### Changed
+- **Ultra Vixolity moved up** to the 2nd place (right after Ultra Archive, above Ultra Movy).
+### Removed
+- **Ultra SezonlukDizi** — sezonlukdizi.cc now puts a reCAPTCHA in front of every player request, which a plugin cannot solve, so it returned no links. Turkish series are covered by Ultra Vixolity (Turkish dub + subtitles, 1080p), Ultra FilmModu and Ultra DiziBak. The source code stays in `src/` in case the site drops the captcha.
+
 ## [1.0.7] — 2026-11-26
 ### Added
 - **Ultra Vixolity** — Turkish dub + Turkish subtitles for movies **and series**, 1080p HLS, no captcha / Cloudflare, about 1 s per title (direct IMDb lookup).
